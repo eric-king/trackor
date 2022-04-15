@@ -1,4 +1,5 @@
 ﻿@page "/activitylog"
+@using Trackor.Features.ActivityLog.Model
 @inherits FluxorComponent
 
 @inject IState<ActivityLogState> ActivityLogState
@@ -6,11 +7,29 @@
 
 <PageTitle>Activity Log</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Activity Log</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" />
+    Activity Log
+</MudText>
 
 @if (ActivityLogState.Value.IsLoaded)
 {
-    <p>Loaded!</p>
+    <MudTable Items="@Items" Hover="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Narrative</MudTh>
+            <MudTh>Date</MudTh>
+            <MudTh>Duration</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Title">@context.Title</MudTd>
+            <MudTd DataLabel="Narrative">@context.Narrative</MudTd>
+            <MudTd DataLabel="Date">@context.Date</MudTd>
+            <MudTd DataLabel="Duration">@context.Duration</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 else
 {
@@ -18,6 +37,7 @@ else
 }
 
 @code {
+    private ActivityLogItem[] Items => ActivityLogState.Value.ActivityLogItems;
 
     protected override void OnInitialized()
     {
