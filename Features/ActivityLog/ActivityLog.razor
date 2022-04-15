@@ -1,0 +1,32 @@
+﻿@page "/activitylog"
+@inherits FluxorComponent
+
+@inject IState<ActivityLogState> ActivityLogState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Activity Log</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Activity Log</MudText>
+
+@if (ActivityLogState.Value.IsLoaded)
+{
+    <p>Loaded!</p>
+}
+else
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (!ActivityLogState.Value.IsLoaded)
+        {
+            Dispatcher.Dispatch(new ActivityLogLoadAction());
+        }
+    }
+
+}
