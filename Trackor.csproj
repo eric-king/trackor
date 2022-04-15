@@ -8,6 +8,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove=".gitattributes" />
+	  <None Remove=".gitignore" />
+	  <None Remove="README.md" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Fluxor" Version="5.2.0" />
 		<PackageReference Include="Fluxor.Blazor.Web" Version="5.2.0" />
 		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="5.2.0" />
