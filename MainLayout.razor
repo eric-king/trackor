@@ -1,17 +1,20 @@
-﻿@inherits LayoutComponentBase
+﻿@using Trackor.Features.Theme
+@inherits FluxorLayout
 
-<MudThemeProvider />
+@inject IState<ThemeState> ThemeState
+
+<MudThemeProvider Theme="ThemeState.Value.Theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => _drawerOpen = !_drawerOpen)" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => drawerOpen = !drawerOpen)" />
         <MudText Typo="Typo.h6">trackor</MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/eric-king/trackor/" Target="_blank" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="6">
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
@@ -23,6 +26,6 @@
 
 @code {
 
-    bool _drawerOpen = false;
+    bool drawerOpen = false;
 
 }

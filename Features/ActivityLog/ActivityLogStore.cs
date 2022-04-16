@@ -6,6 +6,7 @@ namespace Trackor.Features.ActivityLog;
 public record ActivityLogLoadAction();
 public record ActivityLogSetLogItemsAction(ActivityLogItem[] Items);
 public record ActivityLogSetLoadedAction(bool IsLoaded);
+public record ActivityLogAddAction(ActivityLogItem Item);
 
 public record ActivityLogState
 {
@@ -30,7 +31,7 @@ public class ActivityLogFeature : Feature<ActivityLogState>
 public static class ActivityLogReducers
 {
     [ReducerMethod]
-    public static ActivityLogState OnActivityLogSetLoadedAction(ActivityLogState state, ActivityLogSetLoadedAction action)
+    public static ActivityLogState OnActivityLogSetLoaded(ActivityLogState state, ActivityLogSetLoadedAction action)
     {
         return state with
         {
@@ -39,12 +40,24 @@ public static class ActivityLogReducers
     }
 
     [ReducerMethod]
-    public static ActivityLogState OnActivityLogSetLogItemsAction(ActivityLogState state, ActivityLogSetLogItemsAction action)
+    public static ActivityLogState OnActivityLogSetLogItems(ActivityLogState state, ActivityLogSetLogItemsAction action)
     {
         return state with
         {
             ActivityLogItems = action.Items,
             IsLoaded = true
+        };
+    }
+
+    [ReducerMethod]
+    public static ActivityLogState OnActivityLogAdd(ActivityLogState state, ActivityLogAddAction action) 
+    {
+        var itemList = state.ActivityLogItems.ToList();
+        itemList.Add(action.Item);
+
+        return state with
+        {
+            ActivityLogItems = itemList.ToArray()
         };
     }
 }
