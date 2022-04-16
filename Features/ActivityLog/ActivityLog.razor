@@ -1,7 +1,9 @@
 ﻿@page "/activitylog"
+@inherits FluxorComponent
+
 @using System.ComponentModel.DataAnnotations
 @using Trackor.Features.ActivityLog.Model
-@inherits FluxorComponent
+@using Trackor.Features.Activity.Model
 
 @inject IState<ActivityLogState> ActivityLogState
 @inject IDispatcher Dispatcher
@@ -16,19 +18,16 @@
 @if (ActivityLogState.Value.IsLoaded)
 {
     <MudPaper Class="pa-3 mb-3" Elevation="6">
-        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTextField T="string" Label="Username" Required="true" RequiredError="User name is required!" />
-            <MudTextField T="string" Label="Email" Required="true" RequiredError="Email is required!"
-                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
-            <div class="d-flex">
-                <MudRadioGroup T="string" Required="true" RequiredError="Account type is required!">
-                    <MudRadio Option="@("Personal")">Personal</MudRadio>
-                    <MudRadio Option="@("Professional")">Professional</MudRadio>
-                </MudRadioGroup>
+        <MudForm @bind-IsValid="@formIsValid">
+            <div class="d-flex align-center justify-space-between">
+                <MudAutocomplete T="Category" Label="Category" @bind-Value="selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
+                <MudAutocomplete T="Project" Label="Project" @bind-Value="selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
+                <MudDatePicker Label="Activity Date" @bind-Date="activityDate" />
             </div>
+            <MudTextField T="string" Label="Activity Title" @bind-Value="activityTitle" Required="true" RequiredError="Activity Title is required" />
+            <MudTextField T="string" Label="Narrative" @bind-Value="activityNarrative" Lines="3" />
             <div class="d-flex align-center justify-space-between mt-6">
-                <MudCheckBox T="bool" Required="true" RequiredError="You must agree" Class="ml-n2" Label="I agree!" />
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Register</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewActivity" Class="ml-auto">Add</MudButton>
             </div>
         </MudForm>
     </MudPaper>
@@ -56,11 +55,13 @@ else
 }
 
 @code {
+    bool formIsValid;
     ActivityLogItem[] Items => ActivityLogState.Value.ActivityLogItems;
-
-    bool success;
-    string[] errors = Array.Empty<string>();
-    MudForm form;
+    Category selectedCategory;
+    Project selectedProject;
+    string activityTitle = "";
+    string activityNarrative = "";
+    DateTime? activityDate = DateTime.Now;
 
     protected override void OnInitialized()
     {
@@ -72,4 +73,46 @@ else
         }
     }
 
+    private void AddNewActivity()
+    {
+        var newId = Items.MaxBy(x => x.Id).Id + 1;
+        var newActivity = new ActivityLogItem
+        {
+            Id = newId,
+            CategoryId = selectedCategory?.Id,
+            ProjectId = selectedProject?.Id,
+            Title = activityTitle,
+            Narrative = activityNarrative,
+            Date = activityDate.HasValue ? DateOnly.FromDateTime(activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
+            Duration = TimeSpan.Zero
+        };
+        Dispatcher.Dispatch(new ActivityLogAddAction(newActivity));
+
+        activityTitle = string.Empty;
+        activityNarrative = string.Empty;
+    }
+
+    private async Task<IEnumerable<Category>> CategorySearch(string value)
+    {
+        await Task.Delay(100);
+        return new List<Category>
+        {
+            new Category {Id = 1, Title = "First Category", Active = true },
+            new Category {Id = 2, Title = "Second Category", Active = true },
+            new Category {Id = 3, Title = "Third Category", Active = true },
+            new Category {Id = 4, Title = "Fourth Category", Active = true }
+        };
+    }
+
+    private async Task<IEnumerable<Project>> ProjectSearch(string value)
+    {
+        await Task.Delay(100);
+        return new List<Project>
+        {
+            new Project {Id = 1, Title = "First Project", Active = true },
+            new Project {Id = 2, Title = "Second Project", Active = true },
+            new Project {Id = 3, Title = "Third Project", Active = true },
+            new Project {Id = 4, Title = "Fourth Project", Active = true }
+        };
+    }
 }

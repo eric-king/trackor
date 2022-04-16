@@ -50,22 +50,22 @@ public static class ActivityLogReducers
     }
 
     [ReducerMethod]
-    public static ActivityLogState OnActivityLogAdd(ActivityLogState state, ActivityLogAddAction action) 
+    public static ActivityLogState OnActivityLogAdd(ActivityLogState state, ActivityLogAddAction action)
     {
         var itemList = state.ActivityLogItems.ToList();
         itemList.Add(action.Item);
 
         return state with
         {
-            ActivityLogItems = itemList.ToArray()
+            ActivityLogItems = itemList.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray()
         };
     }
 }
 
-public class ActivityLogEffects 
+public class ActivityLogEffects
 {
     [EffectMethod(typeof(ActivityLogLoadAction))]
-    public async Task OnActivityLogSetLoaded(IDispatcher dispatcher) 
+    public async Task OnActivityLogSetLoaded(IDispatcher dispatcher)
     {
         // simulate loading something
         await Task.Delay(500);
@@ -85,6 +85,6 @@ public class ActivityLogEffects
         new ActivityLogItem { Id = 5, CategoryId = null, ProjectId = null, Title = "Test Item 5", Narrative = "This is test item 5", Date = DateOnly.FromDateTime(DateTime.Now.AddDays(-2)), Duration = TimeSpan.FromMinutes(9) }
         };
 
-        return activityLogItems;
+        return activityLogItems.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray();
     }
 }
