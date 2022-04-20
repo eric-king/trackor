@@ -1,0 +1,74 @@
+﻿@page "/projects"
+@inherits FluxorComponent
+
+@using Trackor.Features.Core.Model
+@using Trackor.Features.Core
+
+@inject IState<CoreState> CoreState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Projects</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" />
+    Projects
+</MudText>
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudForm @bind-IsValid="@formIsValid">
+        <MudTextField T="string" Label="Project Title" @bind-Value="projectTitle" Required="true" RequiredError="Project Title is required" />
+        <MudTextField T="string" Label="Description" @bind-Value="projectDescription" />
+        <div class="d-flex align-center justify-space-between mt-6">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewProject" Class="ml-auto">Add</MudButton>
+        </div>
+    </MudForm>
+</MudPaper>
+
+@if (CoreState.Value.Projects.Any())
+{
+    <MudTable Items="@ProjectList" Hover="true" Elevation="6">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Active</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Title">@context.Title</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+            <MudTd DataLabel="Active">@context.Active</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    string projectTitle;
+    string projectDescription;
+    bool formIsValid;
+    Project[] ProjectList => CoreState.Value.Projects;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (!CoreState.Value.Projects.Any())
+        {
+            Dispatcher.Dispatch(new CoreLoadProjectsAction());
+        }
+    }
+
+    private void AddNewProject()
+    {
+        var newProject = new Project
+            {
+                Title = projectTitle,
+                Description = projectDescription,
+                Active = true
+            };
+
+        Dispatcher.Dispatch(new CoreProjectSaveAction(newProject));
+
+        projectTitle = string.Empty;
+        projectDescription = string.Empty;
+    }
+}

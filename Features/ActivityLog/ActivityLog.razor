@@ -1,11 +1,12 @@
 ﻿@page "/activitylog"
 @inherits FluxorComponent
 
-@using System.ComponentModel.DataAnnotations
 @using Trackor.Features.ActivityLog.Model
-@using Trackor.Features.Activity.Model
+@using Trackor.Features.Core.Model
+@using Trackor.Features.Core
 
 @inject IState<ActivityLogState> ActivityLogState
+@inject IState<CoreState> CoreState
 @inject IDispatcher Dispatcher
 
 <PageTitle>Activity Log</PageTitle>
@@ -69,16 +70,24 @@ else
 
         if (!ActivityLogState.Value.IsLoaded)
         {
-            Dispatcher.Dispatch(new ActivityLogLoadAction());
+            Dispatcher.Dispatch(new ActivityLogLoadItemsAction());
+        }
+
+        if (!CoreState.Value.Categories.Any())
+        {
+            Dispatcher.Dispatch(new CoreLoadCategoriesAction());
+        }
+
+        if (!CoreState.Value.Projects.Any())
+        {
+            Dispatcher.Dispatch(new CoreLoadProjectsAction());
         }
     }
 
     private void AddNewActivity()
     {
-        var newId = Items.MaxBy(x => x.Id).Id + 1;
         var newActivity = new ActivityLogItem
         {
-            Id = newId,
             CategoryId = selectedCategory?.Id,
             ProjectId = selectedProject?.Id,
             Title = activityTitle,
@@ -86,7 +95,7 @@ else
             Date = activityDate.HasValue ? DateOnly.FromDateTime(activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
             Duration = TimeSpan.Zero
         };
-        Dispatcher.Dispatch(new ActivityLogAddAction(newActivity));
+        Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
 
         activityTitle = string.Empty;
         activityNarrative = string.Empty;
@@ -94,25 +103,13 @@ else
 
     private async Task<IEnumerable<Category>> CategorySearch(string value)
     {
-        await Task.Delay(100);
-        return new List<Category>
-        {
-            new Category {Id = 1, Title = "First Category", Active = true },
-            new Category {Id = 2, Title = "Second Category", Active = true },
-            new Category {Id = 3, Title = "Third Category", Active = true },
-            new Category {Id = 4, Title = "Fourth Category", Active = true }
-        };
+        await Task.Delay(0);
+        return CoreState.Value.Categories;
     }
 
     private async Task<IEnumerable<Project>> ProjectSearch(string value)
     {
-        await Task.Delay(100);
-        return new List<Project>
-        {
-            new Project {Id = 1, Title = "First Project", Active = true },
-            new Project {Id = 2, Title = "Second Project", Active = true },
-            new Project {Id = 3, Title = "Third Project", Active = true },
-            new Project {Id = 4, Title = "Fourth Project", Active = true }
-        };
+        await Task.Delay(0);
+        return CoreState.Value.Projects;
     }
 }

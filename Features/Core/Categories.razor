@@ -1,0 +1,68 @@
+﻿@page "/categories"
+@inherits FluxorComponent
+
+@using Trackor.Features.Core.Model
+@using Trackor.Features.Core
+
+@inject IState<CoreState> CoreState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Categories</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" />
+    Categories
+</MudText>
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudForm @bind-IsValid="@formIsValid">
+        <MudTextField T="string" Label="Category Title" @bind-Value="categoryTitle" Required="true" RequiredError="Category Title is required" />
+        <div class="d-flex align-center justify-space-between mt-6">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewCategory" Class="ml-auto">Add</MudButton>
+        </div>
+    </MudForm>
+</MudPaper>
+
+@if (CoreState.Value.Categories.Any())
+{
+    <MudTable Items="@CategoryList" Hover="true" Elevation="6">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Active</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Title">@context.Title</MudTd>
+            <MudTd DataLabel="Active">@context.Active</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    string categoryTitle;
+    bool formIsValid;
+    Category[] CategoryList => CoreState.Value.Categories;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (!CoreState.Value.Categories.Any())
+        {
+            Dispatcher.Dispatch(new CoreLoadCategoriesAction());
+        }
+    }
+
+    private void AddNewCategory()
+    {
+        var newCategory = new Category
+            {
+                Title = categoryTitle,
+                Active = true
+            };
+
+        Dispatcher.Dispatch(new CoreCategorySaveAction(newCategory));
+
+        categoryTitle = string.Empty;
+    }
+}
