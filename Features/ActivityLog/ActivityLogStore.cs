@@ -80,5 +80,4 @@ public class ActivityLogEffects
         await dbContext.SaveChangesAsync();
         dispatcher.Dispatch(new ActivityLogAddItemAction(action.Item));
     }
-
 }

@@ -1,9 +1,9 @@
 ﻿@page "/database"
 @inherits FluxorComponent
 
-@using Trackor.Features.Core
+@using Trackor.Features.Database
 
-@inject IState<CoreState> CoreState
+@inject IState<DatabaseState> DatabaseState
 @inject IDispatcher Dispatcher
 
 <PageTitle>Database</PageTitle>
@@ -14,16 +14,16 @@
 </MudText>
 
 <MudAlert Severity="Severity.Info">
-    @if (!string.IsNullOrEmpty(CoreState.Value.DbDownloadUrl))
+    @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
     {
-        <a href="@CoreState.Value.DbDownloadUrl" target="_blank" download="trackor_db.sqlite3">Download DB File</a>
+        <a href="@DatabaseState.Value.DownloadUrl" target="_blank" download="trackor_db.sqlite3">Download DB File</a>
     }
 </MudAlert>
 
 @code {
     protected override void OnInitialized()
     {
-        Dispatcher.Dispatch(new CoreBuildDbDownloadUrlAction());
+        Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
         base.OnInitialized();
     }
 }
