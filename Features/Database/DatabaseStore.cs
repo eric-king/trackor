@@ -53,8 +53,8 @@ public class DatabaseEffects
         // bail if the download url has already been generated
         if (!string.IsNullOrEmpty(_state.Value.DownloadUrl)) return;
 
-        var jsModule = await _js.InvokeAsync<IJSObjectReference>("import", "./dbDownload.js");
-        var downloadUrl = await jsModule.InvokeAsync<string>("generateDownloadUrl");
+        var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
+        var downloadUrl = await dbModule.InvokeAsync<string>("generateDownloadUrl");
 
         if (!string.IsNullOrEmpty(downloadUrl))
         {
