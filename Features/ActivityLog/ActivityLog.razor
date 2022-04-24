@@ -81,20 +81,20 @@ else
         if (!CoreState.Value.Projects.Any())
         {
             Dispatcher.Dispatch(new CoreLoadProjectsAction());
-        }
+        }       
     }
 
     private void AddNewActivity()
     {
         var newActivity = new ActivityLogItem
-        {
-            CategoryId = selectedCategory?.Id,
-            ProjectId = selectedProject?.Id,
-            Title = activityTitle,
-            Narrative = activityNarrative,
-            Date = activityDate.HasValue ? DateOnly.FromDateTime(activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
-            Duration = TimeSpan.Zero
-        };
+            {
+                CategoryId = selectedCategory?.Id,
+                ProjectId = selectedProject?.Id,
+                Title = activityTitle,
+                Narrative = activityNarrative,
+                Date = activityDate.HasValue ? DateOnly.FromDateTime(activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
+                Duration = TimeSpan.Zero
+            };
         Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
 
         activityTitle = string.Empty;

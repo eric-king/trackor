@@ -1,0 +1,30 @@
+﻿@page "/database"
+@inherits FluxorComponent
+
+@using Trackor.Features.Core.Model
+@using Trackor.Features.Core
+
+@inject IState<CoreState> CoreState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Database</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Material.Filled.DataObject" />
+    Database
+</MudText>
+
+<MudAlert Severity="Severity.Info">
+    @if (!string.IsNullOrEmpty(CoreState.Value.DbDownloadUrl))
+    {
+        <a href="@CoreState.Value.DbDownloadUrl" target="_blank" download="trackor_db.sqlite3">Download DB File</a>
+    }
+</MudAlert>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Dispatcher.Dispatch(new CoreBuildDbDownloadUrlAction());
+        base.OnInitialized();
+    }
+}
