@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="wwwroot\dbDownload.js" />
+	  <None Include="wwwroot\database.js" />
 	</ItemGroup>
 
 	<ItemGroup>
