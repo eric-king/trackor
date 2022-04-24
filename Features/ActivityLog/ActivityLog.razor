@@ -2,14 +2,14 @@
 @inherits FluxorComponent
 
 @using Trackor.Features.ActivityLog.Model
-@using Trackor.Features.Core.Model
-@using Trackor.Features.Core
 @using Trackor.Features.Categories
 @using Trackor.Features.Categories.Model
+@using Trackor.Features.Projects
+@using Trackor.Features.Projects.Model
 
 @inject IState<ActivityLogState> ActivityLogState
 @inject IState<CategoriesState> CategoriesState
-@inject IState<CoreState> CoreState
+@inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
 
 <PageTitle>Activity Log</PageTitle>
@@ -81,9 +81,9 @@ else
             Dispatcher.Dispatch(new CategoriesLoadAction());
         }
 
-        if (!CoreState.Value.Projects.Any())
+        if (!ProjectsState.Value.Projects.Any())
         {
-            Dispatcher.Dispatch(new CoreLoadProjectsAction());
+            Dispatcher.Dispatch(new ProjectsLoadAction());
         }       
     }
 
@@ -113,6 +113,6 @@ else
     private async Task<IEnumerable<Project>> ProjectSearch(string value)
     {
         await Task.Delay(0);
-        return CoreState.Value.Projects;
+        return ProjectsState.Value.Projects;
     }
 }

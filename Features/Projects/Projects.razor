@@ -1,10 +1,10 @@
 ﻿@page "/projects"
 @inherits FluxorComponent
 
-@using Trackor.Features.Core.Model
-@using Trackor.Features.Core
+@using Trackor.Features.Projects.Model
+@using Trackor.Features.Projects
 
-@inject IState<CoreState> CoreState
+@inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
 
 <PageTitle>Projects</PageTitle>
@@ -24,7 +24,7 @@
     </MudForm>
 </MudPaper>
 
-@if (CoreState.Value.Projects.Any())
+@if (ProjectsState.Value.Projects.Any())
 {
     <MudTable Items="@ProjectList" Hover="true" Elevation="6">
         <HeaderContent>
@@ -46,27 +46,27 @@
     string projectTitle;
     string projectDescription;
     bool formIsValid;
-    Project[] ProjectList => CoreState.Value.Projects;
+    Project[] ProjectList => ProjectsState.Value.Projects;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (!CoreState.Value.Projects.Any())
+        if (!ProjectsState.Value.Projects.Any())
         {
-            Dispatcher.Dispatch(new CoreLoadProjectsAction());
+            Dispatcher.Dispatch(new ProjectsLoadAction());
         }
     }
 
     private void AddNewProject()
     {
         var newProject = new Project
-            {
-                Title = projectTitle,
-                Description = projectDescription,
-                Active = true
-            };
+        {
+            Title = projectTitle,
+            Description = projectDescription,
+            Active = true
+        };
 
-        Dispatcher.Dispatch(new CoreProjectSaveAction(newProject));
+        Dispatcher.Dispatch(new ProjectsSaveAction(newProject));
 
         projectTitle = string.Empty;
         projectDescription = string.Empty;
