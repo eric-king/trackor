@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Trackor.Features.ActivityLog.Model;
+using Trackor.Features.Categories.Model;
 using Trackor.Features.Core.Model;
 
 namespace Trackor.Database

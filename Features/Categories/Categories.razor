@@ -1,10 +1,10 @@
 ﻿@page "/categories"
 @inherits FluxorComponent
 
-@using Trackor.Features.Core.Model
-@using Trackor.Features.Core
+@using Trackor.Features.Categories.Model
+@using Trackor.Features.Categories
 
-@inject IState<CoreState> CoreState
+@inject IState<CategoriesState> CategoriesState
 @inject IDispatcher Dispatcher
 
 <PageTitle>Categories</PageTitle>
@@ -23,7 +23,7 @@
     </MudForm>
 </MudPaper>
 
-@if (CoreState.Value.Categories.Any())
+@if (CategoriesState.Value.Categories.Any())
 {
     <MudTable Items="@CategoryList" Hover="true" Elevation="6">
         <HeaderContent>
@@ -42,14 +42,14 @@
 @code {
     string categoryTitle;
     bool formIsValid;
-    Category[] CategoryList => CoreState.Value.Categories;
+    Category[] CategoryList => CategoriesState.Value.Categories;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (!CoreState.Value.Categories.Any())
+        if (!CategoriesState.Value.Categories.Any())
         {
-            Dispatcher.Dispatch(new CoreLoadCategoriesAction());
+            Dispatcher.Dispatch(new CategoriesLoadAction());
         }
     }
 
@@ -61,7 +61,7 @@
                 Active = true
             };
 
-        Dispatcher.Dispatch(new CoreCategorySaveAction(newCategory));
+        Dispatcher.Dispatch(new CategoriesSaveAction(newCategory));
 
         categoryTitle = string.Empty;
     }

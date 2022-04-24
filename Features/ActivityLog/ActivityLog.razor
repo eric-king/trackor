@@ -4,8 +4,11 @@
 @using Trackor.Features.ActivityLog.Model
 @using Trackor.Features.Core.Model
 @using Trackor.Features.Core
+@using Trackor.Features.Categories
+@using Trackor.Features.Categories.Model
 
 @inject IState<ActivityLogState> ActivityLogState
+@inject IState<CategoriesState> CategoriesState
 @inject IState<CoreState> CoreState
 @inject IDispatcher Dispatcher
 
@@ -73,9 +76,9 @@ else
             Dispatcher.Dispatch(new ActivityLogLoadItemsAction());
         }
 
-        if (!CoreState.Value.Categories.Any())
+        if (!CategoriesState.Value.Categories.Any())
         {
-            Dispatcher.Dispatch(new CoreLoadCategoriesAction());
+            Dispatcher.Dispatch(new CategoriesLoadAction());
         }
 
         if (!CoreState.Value.Projects.Any())
@@ -104,7 +107,7 @@ else
     private async Task<IEnumerable<Category>> CategorySearch(string value)
     {
         await Task.Delay(0);
-        return CoreState.Value.Categories;
+        return CategoriesState.Value.Categories;
     }
 
     private async Task<IEnumerable<Project>> ProjectSearch(string value)

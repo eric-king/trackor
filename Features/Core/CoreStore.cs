@@ -6,11 +6,6 @@ using Trackor.Features.Core.Model;
 
 namespace Trackor.Features.Core;
 
-public record CoreLoadCategoriesAction();
-public record CoreSetCategoriesAction(Category[] Categories);
-public record CoreCategorySaveAction(Category Category);
-public record CoreCategoryAddAction(Category Category);
-
 public record CoreLoadProjectsAction();
 public record CoreSetProjectsAction(Project[] Projects);
 public record CoreProjectSaveAction(Project Project);
@@ -21,7 +16,6 @@ public record CoreSetDbDownloadUrlAction(string Url);
 
 public record CoreState
 {
-    public Category[] Categories { get; init; }
     public Project[] Projects { get; init; }
     public string DbDownloadUrl { get; init; }
 }
@@ -34,7 +28,6 @@ public class CoreFeature : Feature<CoreState>
     {
         return new CoreState
         {
-            Categories = Array.Empty<Category>(),
             Projects = Array.Empty<Project>(),
             DbDownloadUrl = string.Empty
         };
@@ -43,27 +36,6 @@ public class CoreFeature : Feature<CoreState>
 
 public static class CoreReducers
 {
-    [ReducerMethod]
-    public static CoreState OnSetCategories(CoreState state, CoreSetCategoriesAction action)
-    {
-        return state with
-        {
-            Categories = action.Categories
-        };
-    }
-
-    [ReducerMethod]
-    public static CoreState OnCategoryAdd(CoreState state, CoreCategoryAddAction action)
-    {
-        var categoryList = state.Categories.ToList();
-        categoryList.Add(action.Category);
-
-        return state with
-        {
-            Categories = categoryList.OrderBy(x => x.Title).ToArray()
-        };
-    }
-
     [ReducerMethod]
     public static CoreState OnSetProducts(CoreState state, CoreSetProjectsAction action)
     {
@@ -106,23 +78,6 @@ public class CoreEffects
         _db = dbFactory;
         _js = jsRuntime;
         _state = state;
-    }
-
-    [EffectMethod(typeof(CoreLoadCategoriesAction))]
-    public async Task OnLoadCategories(IDispatcher dispatcher)
-    {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var items = dbContext.Categories.ToArray();
-        dispatcher.Dispatch(new CoreSetCategoriesAction(items));
-    }
-
-    [EffectMethod]
-    public async Task OnCategorySave(CoreCategorySaveAction action, IDispatcher dispatcher)
-    {
-        using var dbContext = await _db.CreateDbContextAsync();
-        dbContext.Categories.Add(action.Category);
-        await dbContext.SaveChangesAsync();
-        dispatcher.Dispatch(new CoreCategoryAddAction(action.Category));
     }
 
     [EffectMethod(typeof(CoreLoadProjectsAction))]
