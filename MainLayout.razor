@@ -1,7 +1,10 @@
 ﻿@using Trackor.Features.Theme
 @inherits FluxorLayout
 
+@using Trackor.Features.Database
+
 @inject IState<ThemeState> ThemeState
+@inject IDispatcher Dispatcher
 
 <MudThemeProvider Theme="ThemeState.Value.Theme" />
 <MudDialogProvider />
@@ -26,6 +29,11 @@
 
 @code {
 
-    bool drawerOpen = false;
+    bool drawerOpen = true;
 
+    protected override void OnInitialized()
+    {
+        Dispatcher.Dispatch(new DatabaseLoadDbCacheModuleAction());
+        base.OnInitialized();
+    }
 }

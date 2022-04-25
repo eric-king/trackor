@@ -1,6 +1,7 @@
 ﻿using Fluxor;
 using SqliteWasmHelper;
 using Trackor.Database;
+using Trackor.Features.Database;
 using Trackor.Features.Projects.Model;
 
 namespace Trackor.Features.Projects;
@@ -50,6 +51,15 @@ public static class CoreReducers
             Projects = projectList.OrderBy(x => x.Title).ToArray()
         };
     }
+
+    [ReducerMethod(typeof(DatabaseDeletedAction))]
+    public static ProjectsState OnDatabaseDeleted(ProjectsState state)
+    {
+        return state with
+        {
+            Projects = Array.Empty<Project>()
+        };
+    }
 }
 
 public class ProjectsEffects
@@ -65,6 +75,7 @@ public class ProjectsEffects
     public async Task OnProjectsLoad(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
+        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.Projects.ToArray();
         dispatcher.Dispatch(new ProjectsSetAction(items));
     }

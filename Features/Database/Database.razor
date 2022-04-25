@@ -3,6 +3,7 @@
 
 @using Trackor.Features.Database
 
+@inject NavigationManager NavigationManager
 @inject IState<DatabaseState> DatabaseState
 @inject IDispatcher Dispatcher
 
@@ -20,10 +21,48 @@
     }
 </MudAlert>
 
+<MudAlert Severity="Severity.Warning">
+    @if (DatabaseState.Value.DbCacheModule != null && !string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
+    {
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="DeleteDatabase">Delete Database</MudButton>
+    }
+</MudAlert>
+
+<MudAlert Severity="Severity.Normal">
+    @if (DatabaseState.Value.DbCacheModule != null)
+    {
+        <InputFile id="dbInputFile" OnChange="UploadFiles" hidden accept=".sqlite3" />
+
+        <MudButton HtmlTag="label"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Filled.CloudUpload"
+               for="dbInputFile">
+            Restore from Backup
+        </MudButton>
+    }
+</MudAlert>
+
 @code {
+
     protected override void OnInitialized()
     {
         Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
+
+        SubscribeToAction<DatabaseUploadedAction>(action => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true));
+
         base.OnInitialized();
+    }
+
+    private void DeleteDatabase()
+    {
+        Dispatcher.Dispatch(new DatabaseDeleteAction());
+    }
+
+    private async void UploadFiles(InputFileChangeEventArgs e)
+    {
+        var fileContent = new byte[e.File.Size];
+        await e.File.OpenReadStream().ReadAsync(fileContent);
+        Dispatcher.Dispatch(new DatabaseUploadAction(fileContent));
     }
 }

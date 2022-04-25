@@ -3,6 +3,7 @@
 
 @using Trackor.Features.Projects.Model
 @using Trackor.Features.Projects
+@using Trackor.Features.Database
 
 @inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
@@ -26,7 +27,7 @@
 
 @if (ProjectsState.Value.Projects.Any())
 {
-    <MudTable Items="@ProjectList" Hover="true" Elevation="6">
+    <MudTable Items="@ProjectsState.Value.Projects" Hover="true" Elevation="6">
         <HeaderContent>
             <MudTh>Id</MudTh>
             <MudTh>Title</MudTh>
@@ -46,15 +47,15 @@
     string projectTitle;
     string projectDescription;
     bool formIsValid;
-    Project[] ProjectList => ProjectsState.Value.Projects;
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
         if (!ProjectsState.Value.Projects.Any())
         {
             Dispatcher.Dispatch(new ProjectsLoadAction());
         }
+
+        base.OnInitialized();
     }
 
     private void AddNewProject()

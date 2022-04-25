@@ -2,6 +2,7 @@
 using SqliteWasmHelper;
 using Trackor.Database;
 using Trackor.Features.Categories.Model;
+using Trackor.Features.Database;
 
 namespace Trackor.Features.Categories;
 
@@ -51,6 +52,14 @@ public static class CategoriesReducers
         };
     }
 
+    [ReducerMethod(typeof(DatabaseDeletedAction))]
+    public static CategoriesState OnDatabaseDeleted(CategoriesState state)
+    {
+        return state with
+        {
+            Categories = Array.Empty<Category>()
+        };
+    }
 }
 
 public class CategoriesEffects
@@ -66,6 +75,7 @@ public class CategoriesEffects
     public async Task OnLoadCategories(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
+        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.Categories.ToArray();
         dispatcher.Dispatch(new CategoriesSetAction(items));
     }

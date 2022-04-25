@@ -2,6 +2,7 @@
 using SqliteWasmHelper;
 using Trackor.Database;
 using Trackor.Features.ActivityLog.Model;
+using Trackor.Features.Database;
 
 namespace Trackor.Features.ActivityLog;
 
@@ -53,29 +54,40 @@ public static class ActivityLogReducers
             ActivityLogItems = itemList.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray()
         };
     }
+
+    [ReducerMethod(typeof(DatabaseDeletedAction))]
+    public static ActivityLogState OnDatabaseDeleted(ActivityLogState state)
+    {
+        return state with
+        {
+            ActivityLogItems = Array.Empty<ActivityLogItem>(),
+            IsLoaded = false
+        };
+    }
 }
 
 public class ActivityLogEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _dbFactory;
+    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
 
     public ActivityLogEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
     {
-        _dbFactory = dbFactory;
+        _db = dbFactory;
     }
 
     [EffectMethod(typeof(ActivityLogLoadItemsAction))]
     public async Task OnActivityLogLoad(IDispatcher dispatcher)
     {
-        using var dbContext = await _dbFactory.CreateDbContextAsync();
+        using var dbContext = await _db.CreateDbContextAsync();
+        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.ActivityLogItems.ToArray();
         dispatcher.Dispatch(new ActivityLogSetLogItemsAction(items));
     }
 
     [EffectMethod]
-    public async Task OnActivityLogSave(ActivityLogSaveItemAction action, IDispatcher dispatcher) 
+    public async Task OnActivityLogSave(ActivityLogSaveItemAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _dbFactory.CreateDbContextAsync();
+        using var dbContext = await _db.CreateDbContextAsync();
         dbContext.ActivityLogItems.Add(action.Item);
         await dbContext.SaveChangesAsync();
         dispatcher.Dispatch(new ActivityLogAddItemAction(action.Item));
