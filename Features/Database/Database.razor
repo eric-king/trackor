@@ -13,45 +13,27 @@
     <MudIcon Icon="@Icons.Material.Filled.DataObject" />
     Database
 </MudText>
-
-<MudAlert Severity="Severity.Info">
+<InputFile id="dbInputFile" OnChange="UploadFile" hidden accept=".sqlite3" />
+<MudButtonGroup Color="Color.Info" Variant="Variant.Filled" OverrideStyles="false">
     @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
     {
-        <a href="@DatabaseState.Value.DownloadUrl" target="_blank" download="@dbFileName">Download DB File</a>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
     }
-</MudAlert>
-
-<MudAlert Severity="Severity.Warning">
-    @if (DatabaseState.Value.DbCacheModule != null && !string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
-    {
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="DeleteDatabase">Delete Database</MudButton>
-    }
-</MudAlert>
-
-<MudAlert Severity="Severity.Normal">
     @if (DatabaseState.Value.DbCacheModule != null)
     {
-        <InputFile id="dbInputFile" OnChange="UploadFiles" hidden accept=".sqlite3" />
-
-        <MudButton HtmlTag="label"
-               Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Filled.CloudUpload"
-               for="dbInputFile">
-            Restore from Backup
-        </MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Filled.CloudUpload">Restore from Backup</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDatabase">Delete Database</MudButton>
     }
-</MudAlert>
+</MudButtonGroup>
 
 @code {
     string dbFileName;
 
     protected override void OnInitialized()
     {
-        var dateStamp = DateTime.Now.ToString("yyyyMMddHHmm");
-        dbFileName = $"trackordb-{dateStamp}.sqlite3";
         Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
-        SubscribeToAction<DatabaseUploadedAction>(action => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true));
+        SetDownloadFileNameWithTimestamp();
+        SubscribeToAction<DatabaseUploadedAction>(RefreshPage);
         base.OnInitialized();
     }
 
@@ -60,10 +42,21 @@
         Dispatcher.Dispatch(new DatabaseDeleteAction());
     }
 
-    private async void UploadFiles(InputFileChangeEventArgs e)
+    private async void UploadFile(InputFileChangeEventArgs e)
     {
         var fileContent = new byte[e.File.Size];
         await e.File.OpenReadStream().ReadAsync(fileContent);
         Dispatcher.Dispatch(new DatabaseUploadAction(fileContent));
+    }
+
+    private void SetDownloadFileNameWithTimestamp()
+    {
+        var dateStamp = DateTime.Now.ToString("yyyyMMddHHmm");
+        dbFileName = $"trackordb-{dateStamp}.sqlite3";
+    }
+
+    private void RefreshPage(DatabaseUploadedAction action)
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 }
