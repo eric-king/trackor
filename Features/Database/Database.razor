@@ -17,7 +17,7 @@
 <MudAlert Severity="Severity.Info">
     @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
     {
-        <a href="@DatabaseState.Value.DownloadUrl" target="_blank" download="trackor_db.sqlite3">Download DB File</a>
+        <a href="@DatabaseState.Value.DownloadUrl" target="_blank" download="@dbFileName">Download DB File</a>
     }
 </MudAlert>
 
@@ -44,13 +44,14 @@
 </MudAlert>
 
 @code {
+    string dbFileName;
 
     protected override void OnInitialized()
     {
+        var dateStamp = DateTime.Now.ToString("yyyyMMddHHmm");
+        dbFileName = $"trackordb-{dateStamp}.sqlite3";
         Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
-
         SubscribeToAction<DatabaseUploadedAction>(action => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true));
-
         base.OnInitialized();
     }
 
