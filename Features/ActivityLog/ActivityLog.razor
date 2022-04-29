@@ -24,13 +24,29 @@
     <MudPaper Class="pa-3 mb-3" Elevation="6">
         <MudFocusTrap DefaultFocus="DefaultFocus.None">
             <MudForm @ref="_activityLogForm" @bind-IsValid="@_formIsValid">
-                <div class="d-flex align-center justify-space-between">
-                    <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
-                    <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
-                    <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
-                </div>
-                <MudTextField @ref="_titleFieldRef" T="string" Label="Activity Title" @bind-Value="_activityTitle" Required="true" RequiredError="Activity Title is required" />
-                <MudTextField T="string" Label="Narrative" @bind-Value="_activityNarrative" Lines="3" />
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
+                    </MudItem>
+                </MudGrid>
+                <MudGrid>
+                    <MudItem xs="8">
+                        <MudTextField @ref="_titleFieldRef" T="string" Label="Activity Title" @bind-Value="_activityTitle" Required="true" RequiredError="Activity Title is required" xs="6" />
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudNumericField @bind-Value="@_activityHours" Label="Hours" Min="0" Max="24" Variant="Variant.Text"></MudNumericField>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudNumericField @bind-Value="@_activityMinutes" Label="Minutes" Min="0" Max="59" Variant="Variant.Text"></MudNumericField>
+                    </MudItem>
+                </MudGrid>
+                <MudTextField T="string" Label="Narrative" @bind-Value="_activityNarrative" Lines="2" />
                 <div class="d-flex align-center justify-space-between mt-6">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_formIsValid)" OnClick="AddNewActivity" Class="ml-auto">Add</MudButton>
                 </div>
@@ -51,7 +67,7 @@
             <MudTd DataLabel="Title">@context.Title</MudTd>
             <MudTd DataLabel="Narrative">@context.Narrative</MudTd>
             <MudTd DataLabel="Date">@context.Date</MudTd>
-            <MudTd DataLabel="Duration">@context.Duration</MudTd>
+            <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -68,6 +84,8 @@ else
     Project _selectedProject;
     string _activityTitle = "";
     string _activityNarrative = "";
+    int _activityHours = 0;
+    int _activityMinutes = 0;
     DateTime? _activityDate = DateTime.Now;
     bool _formIsValid;
 
@@ -95,15 +113,16 @@ else
 
     private async Task AddNewActivity()
     {
+        var timespan = new TimeSpan(hours: _activityHours, minutes: _activityMinutes, seconds: 0);
         var newActivity = new ActivityLogItem
-        {
-            CategoryId = _selectedCategory?.Id,
-            ProjectId = _selectedProject?.Id,
-            Title = _activityTitle,
-            Narrative = _activityNarrative,
-            Date = _activityDate.HasValue ? DateOnly.FromDateTime(_activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
-            Duration = TimeSpan.Zero
-        };
+            {
+                CategoryId = _selectedCategory?.Id,
+                ProjectId = _selectedProject?.Id,
+                Title = _activityTitle,
+                Narrative = _activityNarrative,
+                Date = _activityDate.HasValue ? DateOnly.FromDateTime(_activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
+                Duration = timespan
+            };
 
         Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
         await ResetActivityLogForm();
@@ -111,8 +130,8 @@ else
 
     private async Task ResetActivityLogForm()
     {
-        _activityTitle = null;
-        _activityNarrative = null;
+        _activityTitle = "";
+        _activityNarrative = "";
         _activityLogForm.ResetValidation();
         _formIsValid = false;
         await _titleFieldRef.FocusAsync();
