@@ -22,18 +22,20 @@
 @if (ActivityLogState.Value.IsLoaded)
 {
     <MudPaper Class="pa-3 mb-3" Elevation="6">
-        <MudForm @bind-IsValid="@formIsValid">
-            <div class="d-flex align-center justify-space-between">
-                <MudAutocomplete T="Category" Label="Category" @bind-Value="selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
-                <MudAutocomplete T="Project" Label="Project" @bind-Value="selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
-                <MudDatePicker Label="Activity Date" @bind-Date="activityDate" />
-            </div>
-            <MudTextField T="string" Label="Activity Title" @bind-Value="activityTitle" Required="true" RequiredError="Activity Title is required" />
-            <MudTextField T="string" Label="Narrative" @bind-Value="activityNarrative" Lines="3" />
-            <div class="d-flex align-center justify-space-between mt-6">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewActivity" Class="ml-auto">Add</MudButton>
-            </div>
-        </MudForm>
+        <MudFocusTrap DefaultFocus="DefaultFocus.None">
+            <MudForm @ref="_activityLogForm" @bind-IsValid="@_formIsValid">
+                <div class="d-flex align-center justify-space-between">
+                    <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
+                    <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
+                    <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
+                </div>
+                <MudTextField @ref="_titleFieldRef" T="string" Label="Activity Title" @bind-Value="_activityTitle" Required="true" RequiredError="Activity Title is required" />
+                <MudTextField T="string" Label="Narrative" @bind-Value="_activityNarrative" Lines="3" />
+                <div class="d-flex align-center justify-space-between mt-6">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_formIsValid)" OnClick="AddNewActivity" Class="ml-auto">Add</MudButton>
+                </div>
+            </MudForm>
+        </MudFocusTrap>
     </MudPaper>
 
     <MudTable Items="@Items" Hover="true" Elevation="6">
@@ -59,13 +61,17 @@ else
 }
 
 @code {
-    bool formIsValid;
     ActivityLogItem[] Items => ActivityLogState.Value.ActivityLogItems;
-    Category selectedCategory;
-    Project selectedProject;
-    string activityTitle = "";
-    string activityNarrative = "";
-    DateTime? activityDate = DateTime.Now;
+
+    MudForm _activityLogForm;
+    Category _selectedCategory;
+    Project _selectedProject;
+    string _activityTitle = "";
+    string _activityNarrative = "";
+    DateTime? _activityDate = DateTime.Now;
+    bool _formIsValid;
+
+    MudTextField<string> _titleFieldRef;
 
     protected override void OnInitialized()
     {
@@ -84,24 +90,32 @@ else
         if (!ProjectsState.Value.Projects.Any())
         {
             Dispatcher.Dispatch(new ProjectsLoadAction());
-        }       
+        }
     }
 
-    private void AddNewActivity()
+    private async Task AddNewActivity()
     {
         var newActivity = new ActivityLogItem
-            {
-                CategoryId = selectedCategory?.Id,
-                ProjectId = selectedProject?.Id,
-                Title = activityTitle,
-                Narrative = activityNarrative,
-                Date = activityDate.HasValue ? DateOnly.FromDateTime(activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
-                Duration = TimeSpan.Zero
-            };
-        Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
+        {
+            CategoryId = _selectedCategory?.Id,
+            ProjectId = _selectedProject?.Id,
+            Title = _activityTitle,
+            Narrative = _activityNarrative,
+            Date = _activityDate.HasValue ? DateOnly.FromDateTime(_activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
+            Duration = TimeSpan.Zero
+        };
 
-        activityTitle = string.Empty;
-        activityNarrative = string.Empty;
+        Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
+        await ResetActivityLogForm();
+    }
+
+    private async Task ResetActivityLogForm()
+    {
+        _activityTitle = null;
+        _activityNarrative = null;
+        _activityLogForm.ResetValidation();
+        _formIsValid = false;
+        await _titleFieldRef.FocusAsync();
     }
 
     private async Task<IEnumerable<Category>> CategorySearch(string value)
