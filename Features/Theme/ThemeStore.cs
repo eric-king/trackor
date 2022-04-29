@@ -18,14 +18,14 @@ public class ThemeFeature : Feature<ThemeState>
         {
             Theme = new MudTheme
             {
-                Palette = new Palette()
-                {
-                    Primary = Colors.Purple.Darken2,
-                    Secondary = Colors.Yellow.Accent2,
-                    Background = Colors.BlueGrey.Lighten4,
-                    DrawerBackground = Colors.BlueGrey.Lighten5,
-                    AppbarBackground = Colors.Purple.Darken2
-                }
+                //Palette = new Palette()
+                //{
+                //    Primary = Colors.Purple.Darken2,
+                //    Secondary = Colors.Yellow.Accent2,
+                //    Background = Colors.BlueGrey.Lighten4,
+                //    DrawerBackground = Colors.BlueGrey.Lighten5,
+                //    AppbarBackground = Colors.Purple.Darken2
+                //}
             }
         };
     }
