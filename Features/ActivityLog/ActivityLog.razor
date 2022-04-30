@@ -1,10 +1,13 @@
 ﻿@page "/activitylog"
 @inherits FluxorComponent
 
+@using System.Text
+
 @inject IState<ActivityLogState> ActivityLogState
 @inject IState<CategoriesState> CategoriesState
 @inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Activity Log</PageTitle>
 
@@ -20,10 +23,10 @@
             <MudForm @ref="_activityLogForm" @bind-IsValid="@_formIsValid">
                 <MudGrid>
                     <MudItem xs="4">
-                        <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" />
+                        <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" ResetValueOnEmptyText="true"/>
                     </MudItem>
                     <MudItem xs="4">
-                        <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" Class="mx-6" />
+                        <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" ResetValueOnEmptyText="true" Class="mx-6" />
                     </MudItem>
                     <MudItem xs="4">
                         <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
@@ -60,7 +63,7 @@
             <MudSpacer />
             <MudIconButton OnClick="UnarchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Unarchive" Title="Unarchive" Class="mx-1" />
             <MudIconButton OnClick="ArchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Archive" Title="Archive" Class="mx-1" />
-            <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />
+            <MudIconButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />
         </MudToolBar>
     </MudPaper>
 
@@ -191,6 +194,50 @@ else
             var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
             Dispatcher.Dispatch(new ActivityLogUnarchiveAction(startDate, endDate));
         }
+    }
+
+    private async Task CopyToClipboard()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+
+            var stringBuilder = new StringBuilder();
+            ActivityLogState.Value.ActivityLogItems
+                .Where(x => x.Date >= startDate)
+                .Where(x => x.Date <= endDate)
+                .OrderBy(x => x.Date)
+                .ThenBy(x => x.Id)
+                .ToList()
+                .ForEach(item => stringBuilder.AppendLine(BuildStringForCopying(item)));
+
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", stringBuilder.ToString());
+        }
+    }
+
+    private string BuildStringForCopying(ActivityLogItem item)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.Append($"{item.Date.ToShortDateString()}: ");
+
+        if (item.Duration > TimeSpan.Zero)
+        {
+            stringBuilder.Append($"({item.Duration.ToString(@"hh\:mm")}) ");
+        }
+
+        if (item.CategoryId is not null)
+        {
+            stringBuilder.Append($"{CategoriesState.Value.Categories.Single(x => x.Id == item.CategoryId).Title} - ");
+        }
+
+        if (item.ProjectId is not null)
+        {
+            stringBuilder.Append($"{ProjectsState.Value.Projects.Single(x => x.Id == item.ProjectId).Title} - ");
+        }
+
+        stringBuilder.Append($"{item.Title.Trim()}");
+        return stringBuilder.ToString();
     }
 
     private async Task<IEnumerable<Category>> CategorySearch(string value)
