@@ -1,8 +1,6 @@
 ﻿using Fluxor;
 using SqliteWasmHelper;
-using Trackor.Database;
 using Trackor.Features.Database;
-using Trackor.Features.Projects.Model;
 
 namespace Trackor.Features.Projects;
 

@@ -1,7 +1,5 @@
 ﻿using Fluxor;
 using SqliteWasmHelper;
-using Trackor.Database;
-using Trackor.Features.Categories.Model;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.Categories;

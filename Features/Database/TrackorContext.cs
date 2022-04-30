@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Trackor.Features.ActivityLog.Model;
-using Trackor.Features.Categories.Model;
-using Trackor.Features.Projects.Model;
+using Trackor.Features.ActivityLog;
+using Trackor.Features.Categories;
+using Trackor.Features.Projects;
 
-namespace Trackor.Database
+namespace Trackor.Features.Database
 {
     public class TrackorContext : DbContext
     {

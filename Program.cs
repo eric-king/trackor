@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using SqliteWasmHelper;
 using Trackor;
-using Trackor.Database;
+using Trackor.Features.Database;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

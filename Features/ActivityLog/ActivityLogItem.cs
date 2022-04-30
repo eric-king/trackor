@@ -1,4 +1,4 @@
-﻿namespace Trackor.Features.ActivityLog.Model;
+﻿namespace Trackor.Features.ActivityLog;
 
 public record ActivityLogItem
 {

@@ -1,8 +1,6 @@
 ﻿using Fluxor;
 using Microsoft.EntityFrameworkCore;
 using SqliteWasmHelper;
-using Trackor.Database;
-using Trackor.Features.ActivityLog.Model;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.ActivityLog;

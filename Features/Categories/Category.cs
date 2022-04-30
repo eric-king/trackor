@@ -1,4 +1,4 @@
-﻿namespace Trackor.Features.Categories.Model;
+﻿namespace Trackor.Features.Categories;
 
 public record Category
 {

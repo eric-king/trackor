@@ -1,4 +1,4 @@
-﻿namespace Trackor.Features.Projects.Model;
+﻿namespace Trackor.Features.Projects;
 
 public record Project
 {
