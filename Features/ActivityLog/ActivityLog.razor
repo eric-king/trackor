@@ -75,7 +75,10 @@
             <MudTd DataLabel="Project">@(context.ProjectId == null ? "" : ProjectsState.Value.Projects.Single(x => x.Id == context.ProjectId).Title)</MudTd>
             <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
             <MudTd DataLabel="Activity">@context.Title</MudTd>
-            <MudTd><MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)"></MudIconButton></MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)"></MudIconButton>
+                <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)"></MudIconButton>
+            </MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -136,9 +139,9 @@ else
         Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
     }
 
-    private void EditActivityLogItem(ActivityLogItem activityLogItem)
+    private void EditActivityLogItem(ActivityLogItem activityLogItem, bool copyOnly = false)
     {
-        _selectedId = activityLogItem.Id;
+        _selectedId = copyOnly ? 0 : activityLogItem.Id;
         _activityTitle = activityLogItem.Title;
         _activityHours = activityLogItem.Duration.Hours;
         _activityMinutes = activityLogItem.Duration.Minutes;
