@@ -12,6 +12,8 @@ public record ActivityLogSetLogItemsAction(ActivityLogItem[] Items);
 public record ActivityLogAddItemAction(ActivityLogItem Item);
 public record ActivityLogUpdateItemAction(ActivityLogItem Item);
 public record ActivityLogSaveItemAction(ActivityLogItem Item);
+public record ActivityLogArchiveAction(DateOnly StartDate, DateOnly EndDate);
+public record ActivityLogUnarchiveAction(DateOnly StartDate, DateOnly EndDate);
 
 public record ActivityLogState
 {
@@ -40,7 +42,7 @@ public static class ActivityLogReducers
     {
         return state with
         {
-            ActivityLogItems = action.Items.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray(),
+            ActivityLogItems = action.Items,
             IsLoaded = true
         };
     }
@@ -50,10 +52,14 @@ public static class ActivityLogReducers
     {
         var itemList = state.ActivityLogItems.ToList();
         itemList.Add(action.Item);
+        var newItemArray = itemList
+                .OrderByDescending(x => x.Date)
+                .ThenByDescending(x => x.Id)
+                .ToArray();
 
         return state with
         {
-            ActivityLogItems = itemList.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray()
+            ActivityLogItems = newItemArray
         };
     }
 
@@ -64,10 +70,14 @@ public static class ActivityLogReducers
         var existingItem = itemList.Single(x => x.Id == action.Item.Id);
         itemList.Remove(existingItem);
         itemList.Add(action.Item);
+        var newItemArray = itemList
+                .OrderByDescending(x => x.Date)
+                .ThenByDescending(x => x.Id)
+                .ToArray();
 
         return state with
         {
-            ActivityLogItems = itemList.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).ToArray()
+            ActivityLogItems = newItemArray
         };
     }
 
@@ -96,7 +106,11 @@ public class ActivityLogEffects
     {
         using var dbContext = await _db.CreateDbContextAsync();
         _ = await dbContext.Database.EnsureCreatedAsync();
-        var items = dbContext.ActivityLogItems.ToArray();
+        var items = dbContext.ActivityLogItems
+            .Where(x => x.Archived == false)
+            .OrderByDescending(x => x.Date)
+            .ThenByDescending(x => x.Id)
+            .ToArray();
         dispatcher.Dispatch(new ActivityLogSetLogItemsAction(items));
     }
 
@@ -118,6 +132,45 @@ public class ActivityLogEffects
             await dbContext.SaveChangesAsync();
             dispatcher.Dispatch(new ActivityLogUpdateItemAction(action.Item));
         }
-        
+    }
+
+    [EffectMethod]
+    public async Task OnActivityLogArchive(ActivityLogArchiveAction action, IDispatcher dispatcher) 
+    {
+        using var dbContext = await _db.CreateDbContextAsync();
+
+        var items = dbContext.ActivityLogItems.AsNoTracking()
+            .Where(x => x.Date >= action.StartDate)
+            .Where(x => x.Date <= action.EndDate);
+
+        foreach (var item in items)
+        {
+            var archivedItem = item with { Archived = true };
+            var tracking = dbContext.Attach(archivedItem);
+            tracking.State = EntityState.Modified;
+        }
+
+        await dbContext.SaveChangesAsync();
+        dispatcher.Dispatch(new ActivityLogLoadItemsAction());
+    }
+
+    [EffectMethod]
+    public async Task OnActivityLogUnarchive(ActivityLogUnarchiveAction action, IDispatcher dispatcher)
+    {
+        using var dbContext = await _db.CreateDbContextAsync();
+
+        var items = dbContext.ActivityLogItems.AsNoTracking()
+            .Where(x => x.Date >= action.StartDate)
+            .Where(x => x.Date <= action.EndDate);
+
+        foreach (var item in items)
+        {
+            var archivedItem = item with { Archived = false };
+            var tracking = dbContext.Attach(archivedItem);
+            tracking.State = EntityState.Modified;
+        }
+
+        await dbContext.SaveChangesAsync();
+        dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 }

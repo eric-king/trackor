@@ -1,12 +1,6 @@
 ﻿@page "/activitylog"
 @inherits FluxorComponent
 
-@using Trackor.Features.ActivityLog.Model
-@using Trackor.Features.Categories
-@using Trackor.Features.Categories.Model
-@using Trackor.Features.Projects
-@using Trackor.Features.Projects.Model
-
 @inject IState<ActivityLogState> ActivityLogState
 @inject IState<CategoriesState> CategoriesState
 @inject IState<ProjectsState> ProjectsState
@@ -60,6 +54,16 @@
         </MudFocusTrap>
     </MudPaper>
 
+    <MudPaper Class="pa-3 mb-3" Elevation="6">
+        <MudToolBar>
+            <MudDateRangePicker Label="Date Range" @bind-DateRange="_actionBarDateRange" />
+            <MudSpacer />
+            <MudIconButton OnClick="UnarchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Unarchive" Title="Unarchive" Class="mx-1" />
+            <MudIconButton OnClick="ArchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Archive" Title="Archive" Class="mx-1" />
+            <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />
+        </MudToolBar>
+    </MudPaper>
+
     <MudTable Items="@Items" Hover="true" Elevation="6">
         <HeaderContent>
             <MudTh>Date</MudTh>
@@ -76,8 +80,8 @@
             <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
             <MudTd DataLabel="Activity">@context.Title</MudTd>
             <MudTd>
-                <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)"></MudIconButton>
-                <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)"></MudIconButton>
+                <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
+                <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)" Title="Edit"></MudIconButton>
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -101,6 +105,8 @@ else
     bool _formIsValid;
 
     MudTextField<string> _titleFieldRef;
+
+    DateRange _actionBarDateRange = new DateRange(DateTime.Now.Date.AddDays(-7), DateTime.Now.Date);
 
     protected override void OnInitialized()
     {
@@ -163,7 +169,28 @@ else
         _activityMinutes = 0;
         _activityLogForm.ResetValidation();
         _formIsValid = false;
+
         await _titleFieldRef.FocusAsync();
+    }
+
+    private void ArchiveForDateRange()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+            Dispatcher.Dispatch(new ActivityLogArchiveAction(startDate, endDate));
+        }
+    }
+
+    private void UnarchiveForDateRange()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+            Dispatcher.Dispatch(new ActivityLogUnarchiveAction(startDate, endDate));
+        }
     }
 
     private async Task<IEnumerable<Category>> CategorySearch(string value)

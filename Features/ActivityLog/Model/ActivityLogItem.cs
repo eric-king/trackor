@@ -8,4 +8,5 @@ public record ActivityLogItem
     public string Title { get; init; }
     public DateOnly Date { get; init; }
     public TimeSpan Duration { get; init; }
+    public bool Archived { get; init; }
 }
