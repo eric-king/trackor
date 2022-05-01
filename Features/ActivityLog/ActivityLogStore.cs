@@ -7,6 +7,7 @@ namespace Trackor.Features.ActivityLog;
 
 public record ActivityLogLoadItemsAction();
 public record ActivityLogSetLogItemsAction(ActivityLogItem[] Items);
+public record ActivityLogEditItemAction(ActivityLogItem Item, bool CopyOnly);
 public record ActivityLogAddItemAction(ActivityLogItem Item);
 public record ActivityLogUpdateItemAction(ActivityLogItem Item);
 public record ActivityLogSaveItemAction(ActivityLogItem Item);

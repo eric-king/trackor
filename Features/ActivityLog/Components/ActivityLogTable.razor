@@ -1,0 +1,37 @@
+﻿@inherits FluxorComponent
+
+@inject IState<ActivityLogState> ActivityLogState
+@inject IState<CategoriesState> CategoriesState
+@inject IState<ProjectsState> ProjectsState
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="mb-10" Elevation="6">
+    <MudTable Items="@ActivityLogState.Value.ActivityLogItems" Hover="true">
+        <HeaderContent>
+            <MudTh>Date</MudTh>
+            <MudTh>Category</MudTh>
+            <MudTh>Project</MudTh>
+            <MudTh>Duration</MudTh>
+            <MudTh>Activity</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Date">@context.Date</MudTd>
+            <MudTd DataLabel="Category">@(context.CategoryId == null ? "" : CategoriesState.Value.Categories.Single(x => x.Id == context.CategoryId).Title)</MudTd>
+            <MudTd DataLabel="Project">@(context.ProjectId == null ? "" : ProjectsState.Value.Projects.Single(x => x.Id == context.ProjectId).Title)</MudTd>
+            <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
+            <MudTd DataLabel="Activity">@context.Title</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
+                <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)" Title="Edit"></MudIconButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private void EditActivityLogItem(ActivityLogItem activityLogItem, bool copyOnly = false)
+    {
+        Dispatcher.Dispatch(new ActivityLogEditItemAction(activityLogItem, copyOnly));
+    }
+}

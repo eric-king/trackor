@@ -1,0 +1,63 @@
+﻿@inherits FluxorComponent
+
+@using System.Text
+
+@inject IState<ActivityLogState> ActivityLogState
+@inject IState<CategoriesState> CategoriesState
+@inject IState<ProjectsState> ProjectsState
+@inject IJSRuntime JSRuntime
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudToolBar>
+        <MudDateRangePicker Label="Date Range" @bind-DateRange="_actionBarDateRange" />
+        <MudSpacer />
+        <MudIconButton OnClick="UnarchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Unarchive" Title="Unarchive" Class="mx-1" />
+        <MudIconButton OnClick="ArchiveForDateRange" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Archive" Title="Archive" Class="mx-1" />
+        <MudIconButton OnClick="CopyToClipboard" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />
+    </MudToolBar>
+</MudPaper>
+
+@code {
+    DateRange _actionBarDateRange = new DateRange(DateTime.Now.Date.AddDays(-7), DateTime.Now.Date);
+
+    private void ArchiveForDateRange()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+            Dispatcher.Dispatch(new ActivityLogArchiveAction(startDate, endDate));
+        }
+    }
+
+    private void UnarchiveForDateRange()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+            Dispatcher.Dispatch(new ActivityLogUnarchiveAction(startDate, endDate));
+        }
+    }
+
+    private async Task CopyToClipboard()
+    {
+        if (_actionBarDateRange.Start.HasValue && _actionBarDateRange.End.HasValue)
+        {
+            var startDate = DateOnly.FromDateTime(_actionBarDateRange.Start.Value);
+            var endDate = DateOnly.FromDateTime(_actionBarDateRange.End.Value);
+
+            var stringBuilder = new StringBuilder();
+            ActivityLogState.Value.ActivityLogItems
+                .Where(x => x.Date >= startDate)
+                .Where(x => x.Date <= endDate)
+                .OrderBy(x => x.Date)
+                .ThenBy(x => x.Id)
+                .ToList()
+                .ForEach(item => stringBuilder.AppendLine(item.ToClipboardString(CategoriesState.Value.Categories, ProjectsState.Value.Projects)));
+
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", stringBuilder.ToString());
+        }
+    }
+}
