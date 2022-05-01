@@ -1,0 +1,70 @@
+﻿using Fluxor;
+
+namespace Trackor.Features.LandingPage;
+
+public record LandingPageState
+{
+    public LandingPageItem[] Items { get; init; }
+}
+
+public class LandingPageFeature : Feature<LandingPageState>
+{
+    public override string GetName() => "LandingPage";
+
+    protected override LandingPageState GetInitialState()
+    {
+        return new LandingPageState
+        {
+            Items = new LandingPageItem[]
+            {
+                new LandingPageItem
+                {
+                    HeaderText = "Activity Log",
+                    BodyText = "Log your daily activities",
+                    ImageUrl = "images/activitylog.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Activity Log",
+                            Url = "/activityLog"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
+                    HeaderText = "Organize",
+                    BodyText = "Organize your Trackor content",
+                    ImageUrl = "images/organize.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Categories",
+                            Url = "/categories"
+                        },
+                        new ItemLink
+                        {
+                            Text = "Projects",
+                            Url = "/projects"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
+                    HeaderText = "Database",
+                    BodyText = "Backup or Restore the Trackor database",
+                    ImageUrl = "images/database.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Database",
+                            Url = "/database"
+                        }
+                    }
+                }
+            }
+        };
+    }
+}

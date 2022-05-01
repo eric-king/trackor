@@ -1,0 +1,20 @@
+﻿<MudItem xs="4">
+    <MudCard>
+        <MudCardMedia Image="@(Item.ImageUrl)" Height="200" />
+        <MudCardContent>
+            <MudText Typo="Typo.h5">@Item.HeaderText</MudText>
+            <MudText Typo="Typo.body2">@Item.BodyText</MudText>
+        </MudCardContent>
+        <MudCardActions>
+            @foreach (var link in Item.Links)
+            {
+                <MudButton Class="mr-3" Variant="Variant.Filled" Color="Color.Primary" Href="@(link.Url)">@link.Text</MudButton>
+            }
+        </MudCardActions>
+    </MudCard>
+</MudItem>
+
+@code {
+    [Parameter]
+    public LandingPageItem Item { get; set; }
+}
