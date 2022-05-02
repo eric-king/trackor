@@ -1,7 +1,0 @@
-﻿<linker>
-	<assembly fullname="System">
-		<type fullname="System.DateOnly">
-			<method name="AddYears" />
-		</type>
-	</assembly>
-</linker>
