@@ -1,0 +1,125 @@
+﻿@inherits FluxorComponent
+
+@inject IState<ActivityLogState> ActivityLogState
+@inject IState<CategoriesState> CategoriesState
+@inject IState<ProjectsState> ProjectsState
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
+        <MudForm @ref="_activityLogForm" @bind-IsValid="@_formIsValid">
+            <MudGrid>
+                <MudItem xs="4">
+                    <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" ResetValueOnEmptyText="true" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" ResetValueOnEmptyText="true" Class="mx-6" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="8">
+                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Required="true" xs="6" />
+                </MudItem>
+                <MudItem xs="2">
+                    <MudNumericField @bind-Value="@_activityHours" Label="Hours" Min="0" Max="24" Variant="Variant.Text"></MudNumericField>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudNumericField @bind-Value="@_activityMinutes" Label="Minutes" Min="0" Max="59" Variant="Variant.Text"></MudNumericField>
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="8"></MudItem>
+                <MudItem xs="4" Style="text-align:right">
+                    @if (_selectedId != 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ResetActivityLogForm">Cancel Edit</MudButton>
+                    }
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_formIsValid)" OnClick="SaveActivityLogItem" Class="ml-3">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudFocusTrap>
+</MudPaper>
+
+@code {
+
+    MudForm _activityLogForm;
+    Category _selectedCategory;
+    Project _selectedProject;
+    int _selectedId = 0;
+    string _activityTitle = "";
+    int _activityHours = 0;
+    int _activityMinutes = 0;
+    DateTime? _activityDate = DateTime.Now;
+    bool _formIsValid;
+
+    MudTextField<string> _activityFieldRef;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);
+    }
+
+    private async Task SaveActivityLogItem()
+    {
+        var timespan = new TimeSpan(hours: _activityHours, minutes: _activityMinutes, seconds: 0);
+        var newActivity = new ActivityLogItem
+            {
+                Id = _selectedId,
+                CategoryId = _selectedCategory?.Id,
+                ProjectId = _selectedProject?.Id,
+                Title = _activityTitle,
+                Date = _activityDate.HasValue ? DateOnly.FromDateTime(_activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
+                Duration = timespan
+            };
+
+        await ResetActivityLogForm();
+        Dispatcher.Dispatch(new ActivityLogSaveItemAction(newActivity));
+    }
+
+    private async Task ResetActivityLogForm()
+    {
+        // Leave Category, Project, and Date where they are
+        // to make subsequent entries easier
+
+        _selectedId = 0;
+        _activityTitle = "";
+        _activityHours = 0;
+        _activityMinutes = 0;
+        _activityLogForm.ResetValidation();
+        _formIsValid = false;
+
+        await _activityFieldRef.FocusAsync();
+    }
+
+    private void EditActivityLogItem(ActivityLogEditItemAction action)
+    {
+        var activityLogItem = action.Item;
+
+        _selectedId = action.CopyOnly ? 0 : activityLogItem.Id;
+        _activityTitle = activityLogItem.Title;
+        _activityHours = activityLogItem.Duration.Hours;
+        _activityMinutes = activityLogItem.Duration.Minutes;
+        _activityDate = activityLogItem.Date.ToDateTime(TimeOnly.MinValue);
+        _selectedCategory = activityLogItem.CategoryId == null ? null : CategoriesState.Value.Categories.Single(x => x.Id == activityLogItem.CategoryId);
+        _selectedProject = activityLogItem.ProjectId == null ? null : ProjectsState.Value.Projects.Single(x => x.Id == activityLogItem.ProjectId);
+        _activityLogForm.ResetValidation();
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<Category>> CategorySearch(string value)
+    {
+        await Task.Yield();
+        return CategoriesState.Value.Categories;
+    }
+
+    private async Task<IEnumerable<Project>> ProjectSearch(string value)
+    {
+        await Task.Yield();
+        return ProjectsState.Value.Projects;
+    }
+}

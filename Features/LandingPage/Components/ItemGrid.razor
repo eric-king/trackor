@@ -1,0 +1,10 @@
+﻿@inherits FluxorComponent
+
+@inject IState<LandingPageState> LandingPageState
+
+<MudGrid>
+    @foreach (var item in LandingPageState.Value.Items)
+    {
+        <ItemCard Item="@item" />
+    }
+</MudGrid>

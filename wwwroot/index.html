@@ -8,12 +8,25 @@
     <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-        <link href="manifest.json" rel="manifest" />
-        <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 </head>
 
 <body>
-    <div id="app">Loading...</div>
+
+    <div id="app">
+        <div style="height: 100%; width: 100%; margin: 0; position: fixed; background-color: #594ae2;">
+            <div style="display:flex; justify-content:center; align-items:center; height:100%; width:100%;">
+                <div>
+                    <img style="margin-top: -20%;" src="loading-water.gif" />
+                    <p style="margin-top: -115px; text-align: center; font-size:x-large; font-family:monospace;">
+                        <strong>trackor</strong> is loading ...
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -21,8 +34,9 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Fluxor.Blazor.Web/scripts/index.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-        <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>

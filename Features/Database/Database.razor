@@ -1,0 +1,60 @@
+﻿@page "/database"
+@inherits FluxorComponent
+
+@inject NavigationManager NavigationManager
+@inject IState<DatabaseState> DatabaseState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Trackor - Database</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Material.Filled.DataObject" />
+    Database
+</MudText>
+<InputFile id="dbInputFile" OnChange="UploadFile" hidden accept=".sqlite3" />
+<MudButtonGroup Color="Color.Info" Variant="Variant.Filled" OverrideStyles="false">
+    @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
+    {
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
+    }
+    @if (DatabaseState.Value.DbCacheModule != null)
+    {
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Filled.CloudUpload">Restore from Backup</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDatabase">Delete Database</MudButton>
+    }
+</MudButtonGroup>
+
+@code {
+    string dbFileName;
+
+    protected override void OnInitialized()
+    {
+        Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
+        SetDownloadFileNameWithTimestamp();
+        SubscribeToAction<DatabaseUploadedAction>(RefreshPage);
+        base.OnInitialized();
+    }
+
+    private void DeleteDatabase()
+    {
+        Dispatcher.Dispatch(new DatabaseDeleteAction());
+    }
+
+    private async void UploadFile(InputFileChangeEventArgs e)
+    {
+        var fileContent = new byte[e.File.Size];
+        await e.File.OpenReadStream().ReadAsync(fileContent);
+        Dispatcher.Dispatch(new DatabaseUploadAction(fileContent));
+    }
+
+    private void SetDownloadFileNameWithTimestamp()
+    {
+        var dateStamp = DateTime.Now.ToString("yyyyMMddHHmm");
+        dbFileName = $"trackordb-{dateStamp}.sqlite3";
+    }
+
+    private void RefreshPage(DatabaseUploadedAction action)
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}
