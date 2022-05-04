@@ -5,22 +5,126 @@
 <MudText Typo="Typo.h4" GutterBottom="true">
     <MudIcon Icon="@Icons.Material.Filled.List" /> Credits
 </MudText>
-<MudText Class="mb-8">Here are some of the resources used to build application:</MudText>
+<MudText Class="mb-6">Here are some of the resources used to build application:</MudText>
 
-<MudStack>
+<MudStack Class="mb-8">
+
     <MudPaper Class="pa-3" Elevation="6">
-        ASP.NET Core Blazor Webassembly
+        <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/blazor_logo.png" Alt="Blazor Logo" Class="mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">Blazor WebAssembly</MudText>
+                <MudText>
+                    <MudLink Href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor" Target="_blank">https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    Blazor lets you build interactive web UIs using C# instead of JavaScript. Blazor apps are
+                    composed of reusable web UI components implemented using C#, HTML, and CSS. Both client and
+                    server code is written in C#, allowing you to share code and libraries.
+                </MudText>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
+
     <MudPaper Class="pa-3" Elevation="6">
-        MudBlazor
+        <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/mudblazor_logo.png" Alt="MudBlazor Logo" Class="mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">MudBlazor</MudText>
+                <MudText>
+                    <MudLink Href="https://mudblazor.com/" Target="_blank">https://mudblazor.com/</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    MudBlazor is a UI component library written from the ground up for Blazor. Apart from the library 
+                    itself, MudBlazor also provides templates, a learning platform, theme manager, demo and 
+                    example projects as well as an online code editor integrated with documentation and issue tracking.
+                </MudText>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
+
     <MudPaper Class="pa-3" Elevation="6">
-        Fluxor
+        <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/fluxor_logo.png" Alt="Fluxor Logo" Class="mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">Fluxor</MudText>
+                <MudText>
+                    <MudLink Href="https://github.com/mrpmorris/Fluxor" Target="_blank">https://github.com/mrpmorris/Fluxor</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    Fluxor is a zero boilerplate Flux/Redux library for Microsoft .NET and Blazor. The aim of Fluxor is to create a 
+                    multi-UI, single-state store approach to front-end development without the headaches 
+                    typically associated with other implementations, such as the overwhelming amount of 
+                    boiler-plate code required just to add a very basic feature.
+                </MudText>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
+
+     <MudPaper Class="pa-3" Elevation="6">
+        <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/efcore_logo.png" Alt="EF Core Logo" Class="rounded-lg mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">Entity Framework Core</MudText>
+                <MudText>
+                    <MudLink Href="https://docs.microsoft.com/en-us/ef/core/" Target="_blank">https://docs.microsoft.com/en-us/ef/core/</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    Entity Framework (EF) Core is a lightweight, extensible, open source and cross-platform 
+                    object-database mapper for .NET. It supports LINQ queries, change tracking, updates, 
+                    and schema migrations.
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
     <MudPaper Class="pa-3" Elevation="6">
-        SqliteWasmHelper / SQLitePCLRaw.bundle_e_sqlite3
+        <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/sqlite_logo.gif" Alt="Sqlite Logo" Class="rounded-lg mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">SqliteWasmHelper</MudText>
+                <MudText>
+                    <MudLink Href="https://github.com/JeremyLikness/SqliteWasmHelper" Target="_blank">https://github.com/JeremyLikness/SqliteWasmHelper</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    SqliteWasmHelper is a package designed to make it easy to work with SQLite databases in Blazor Wasm apps.
+                    This package automatically injects the code needed to persist your database in cache with the help of EF Core.
+                </MudText>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
+
     <MudPaper Class="pa-3" Elevation="6">
-        Pexels https://www.pexels.com/
+         <MudGrid>
+            <MudItem xs="4" Class="d-flex justify-center align-center">
+                <MudImage Src="images/pexels_logo.png" Alt="Pexels Logo" Class="rounded-lg mx-3" />
+            </MudItem>
+            <MudItem xs="8">
+                <MudText Typo="Typo.h5">Pexels</MudText>
+                <MudText>
+                    <MudLink Href="https://www.pexels.com/" Target="_blank">https://www.pexels.com/</MudLink>
+                </MudText>
+                <MudDivider Class="mb-3" />
+                <MudText>
+                    Free stock photos, royalty free images & videos shared by creators.
+                </MudText>
+            </MudItem>
+        </MudGrid>
     </MudPaper>
+
 </MudStack>

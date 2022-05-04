@@ -18,6 +18,6 @@ builder.Services.AddFluxor(o =>
     o.ScanAssemblies(typeof(Program).Assembly);
     o.UseReduxDevTools();
 });
-builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => options.UseSqlite("Data Source=trackor.sqlite3"));
+builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => options.UseSqlite("Data Source=trackor.sqlite3", x => x.MigrationsAssembly(nameof(Trackor))));
 
 await builder.Build().RunAsync();
