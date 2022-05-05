@@ -1,10 +1,11 @@
 ﻿using Fluxor;
 using Microsoft.JSInterop;
 using SqliteWasmHelper;
+using Trackor.Features.Theme;
 
 namespace Trackor.Features.Database;
 
-public record DatabaseLoadDbCacheModuleAction();
+public record DatabaseSetUpDbAction();
 public record DatabaseSetDbCacheModuleAction(IJSObjectReference DbCacheModule);
 public record DatabaseBuildDownloadUrlAction();
 public record DatabaseSetDownloadUrlAction(string Url);
@@ -76,11 +77,14 @@ public class DatabaseEffects
         _state = state;
     }
 
-    [EffectMethod(typeof(DatabaseLoadDbCacheModuleAction))]
-    public async Task OnLoadDbModule(IDispatcher dispatcher)
+    [EffectMethod(typeof(DatabaseSetUpDbAction))]
+    public async Task OnSetupDbModule(IDispatcher dispatcher)
     {
         var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
+        var dbContext = await _db.CreateDbContextAsync();
+        _ = await dbContext.Database.EnsureCreatedAsync();
         dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));
+        dispatcher.Dispatch(new ThemeLoadDarkModeAction());
     }
 
     [EffectMethod(typeof(DatabaseBuildDownloadUrlAction))]
@@ -88,11 +92,6 @@ public class DatabaseEffects
     {
         // bail if the download url has already been generated
         if (!string.IsNullOrEmpty(_state.Value.DownloadUrl)) return;
-
-        if (_state.Value.DbCacheModule is null) 
-        {
-            await OnLoadDbModule(dispatcher);
-        }
 
         var downloadUrl = await _state.Value.DbCacheModule.InvokeAsync<string>("generateDownloadUrl");
 
@@ -118,14 +117,7 @@ public class DatabaseEffects
     [EffectMethod]
     public async Task OnUpload(DatabaseUploadAction action, IDispatcher dispatcher)
     {
-        try
-        {
             await _state.Value.DbCacheModule.InvokeVoidAsync("uploadDatabase", action.DbFile);
             dispatcher.Dispatch(new DatabaseUploadedAction());
-        }
-        catch (Exception)
-        {
-            throw;
-        }
     }
 }

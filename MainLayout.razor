@@ -4,36 +4,69 @@
 @using Trackor.Features.Database
 
 @inject IState<ThemeState> ThemeState
+@inject NavigationManager NavigationManager
 @inject IDispatcher Dispatcher
 
-<MudThemeProvider Theme="ThemeState.Value.Theme" />
+<MudThemeProvider @bind-IsDarkMode="@isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => drawerOpen = !drawerOpen)" />
-        <MudText Typo="Typo.h6">Trackor</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/eric-king/trackor/" Target="_blank" />
-    </MudAppBar>
-    <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="6">
-        <NavMenu />
-    </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+@if (themeLoading)
+{
+    <div style="height: 100%; width: 100%; margin: 0; position: fixed; background-color: #594ae2;">
+        <div style="display:flex; justify-content:center; align-items:center; height:100%; width:100%;">
+            <div>
+                <img style="margin-top: -20%;" src="loading-water.gif" />
+                <p style="margin-top: -115px; text-align: center; font-size:x-large; font-family:monospace;">
+                    <strong>Trackor</strong> theme is loading ...
+                </p>
+            </div>
+
+        </div>
+    </div>
+}
+else
+{
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => drawerOpen = !drawerOpen)" />
+            <MudText Typo="Typo.h6"><span @onclick="NavigateHome">Trackor</span></MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@themeIcon" Color="Color.Inherit" OnClick="ToggleThemeMode" Class="mr-3" />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/eric-king/trackor/" Target="_blank" />
+        </MudAppBar>
+        <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="6">
+            <NavMenu />
+        </MudDrawer>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+}
 
 @code {
-
+    bool themeLoading = true;
     bool drawerOpen = false;
+    bool isDarkMode = false;
+    string themeIcon = Icons.Filled.DarkMode;
 
     protected override void OnInitialized()
     {
-        Dispatcher.Dispatch(new DatabaseLoadDbCacheModuleAction());
+        SubscribeToAction<ThemeSetDarkModeAction>(SetDarkMode);
+        Dispatcher.Dispatch(new DatabaseSetUpDbAction());
         base.OnInitialized();
+    }
+
+    private void NavigateHome() => NavigationManager.NavigateTo("/");
+    private void ToggleThemeMode() => Dispatcher.Dispatch(new ThemeToggleDarkModeAction());
+
+    private void SetDarkMode(ThemeSetDarkModeAction action)
+    {
+        themeLoading = false;
+        isDarkMode = action.IsDarkMode;
+        themeIcon = isDarkMode ? Icons.Filled.LightMode : Icons.Filled.DarkMode;
+        InvokeAsync(StateHasChanged);
     }
 }

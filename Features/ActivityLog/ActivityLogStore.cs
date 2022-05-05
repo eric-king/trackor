@@ -104,7 +104,6 @@ public class ActivityLogEffects
     public async Task OnActivityLogLoad(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.ActivityLogItems
             .Where(x => x.Archived == false)
             .OrderByDescending(x => x.Date)

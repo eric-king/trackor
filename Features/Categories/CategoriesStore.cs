@@ -73,7 +73,6 @@ public class CategoriesEffects
     public async Task OnLoadCategories(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.Categories.ToArray();
         dispatcher.Dispatch(new CategoriesSetAction(items));
     }

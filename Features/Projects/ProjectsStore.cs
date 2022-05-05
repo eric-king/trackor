@@ -73,7 +73,6 @@ public class ProjectsEffects
     public async Task OnProjectsLoad(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.Projects.ToArray();
         dispatcher.Dispatch(new ProjectsSetAction(items));
     }
