@@ -13,8 +13,7 @@
 
 <MudPaper Class="pa-3 mb-3" Elevation="6">
     <MudForm @bind-IsValid="@formIsValid">
-        <MudTextField T="string" Label="Project Title" @bind-Value="projectTitle" Required="true" RequiredError="Project Title is required" />
-        <MudTextField T="string" Label="Description" @bind-Value="projectDescription" />
+        <MudTextField @ref="projectFieldRef" T="string" Label="Project Title" @bind-Value="projectTitle" Immediate="true" AutoFocus="true" Required="true" OnKeyUp="OnKeyUp" RequiredError="Project Title is required" />
         <div class="d-flex align-center justify-space-between mt-6">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewProject" Class="ml-auto">Add</MudButton>
         </div>
@@ -27,13 +26,11 @@
         <HeaderContent>
             <MudTh>Id</MudTh>
             <MudTh>Title</MudTh>
-            <MudTh>Description</MudTh>
             <MudTh>Active</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Id">@context.Id</MudTd>
             <MudTd DataLabel="Title">@context.Title</MudTd>
-            <MudTd DataLabel="Description">@context.Description</MudTd>
             <MudTd DataLabel="Active">@context.Active</MudTd>
         </RowTemplate>
     </MudTable>
@@ -41,8 +38,8 @@
 
 @code {
     string projectTitle;
-    string projectDescription;
     bool formIsValid;
+    MudTextField<string> projectFieldRef;
 
     protected override void OnInitialized()
     {
@@ -54,18 +51,24 @@
         base.OnInitialized();
     }
 
-    private void AddNewProject()
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && formIsValid)
+        {
+            await AddNewProject();
+        }
+    }
+
+    private async Task AddNewProject()
     {
         var newProject = new Project
         {
             Title = projectTitle,
-            Description = projectDescription,
             Active = true
         };
 
         Dispatcher.Dispatch(new ProjectsSaveAction(newProject));
-
         projectTitle = string.Empty;
-        projectDescription = string.Empty;
+        await projectFieldRef.FocusAsync();
     }
 }

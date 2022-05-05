@@ -21,7 +21,7 @@
             </MudGrid>
             <MudGrid>
                 <MudItem xs="8">
-                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Required="true" xs="6" />
+                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Immediate="true" OnKeyUp="OnKeyUp" Required="true" xs="6" />
                 </MudItem>
                 <MudItem xs="2">
                     <MudNumericField @bind-Value="@_activityHours" Label="Hours" Min="0" Max="24" Variant="Variant.Text"></MudNumericField>
@@ -62,6 +62,14 @@
     {
         base.OnInitialized();
         SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && _formIsValid)
+        {
+            await SaveActivityLogItem();
+        }
     }
 
     private async Task SaveActivityLogItem()

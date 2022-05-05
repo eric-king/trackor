@@ -13,7 +13,7 @@
 
 <MudPaper Class="pa-3 mb-3" Elevation="6">
     <MudForm @bind-IsValid="@formIsValid">
-        <MudTextField T="string" Label="Category Title" @bind-Value="categoryTitle" Required="true" RequiredError="Category Title is required" />
+        <MudTextField @ref="categoryFieldRef" T="string" Label="Category Title" @bind-Value="categoryTitle" Immediate="true" OnKeyUp="OnKeyUp" AutoFocus="true" Required="true" RequiredError="Category Title is required" />
         <div class="d-flex align-center justify-space-between mt-6">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="AddNewCategory" Class="ml-auto">Add</MudButton>
         </div>
@@ -40,6 +40,7 @@
     string categoryTitle;
     bool formIsValid;
     Category[] CategoryList => CategoriesState.Value.Categories;
+    MudTextField<string> categoryFieldRef;
 
     protected override void OnInitialized()
     {
@@ -50,7 +51,15 @@
         }
     }
 
-    private void AddNewCategory()
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && formIsValid)
+        {
+            await AddNewCategory();
+        }
+    }
+
+    private async Task AddNewCategory()
     {
         var newCategory = new Category
             {
@@ -61,5 +70,6 @@
         Dispatcher.Dispatch(new CategoriesSaveAction(newCategory));
 
         categoryTitle = string.Empty;
+        await categoryFieldRef.FocusAsync();
     }
 }
