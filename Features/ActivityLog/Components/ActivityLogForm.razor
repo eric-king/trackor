@@ -92,7 +92,18 @@
     private async Task ResetActivityLogForm()
     {
         // Leave Category, Project, and Date where they are
+        // unless they're inactive
         // to make subsequent entries easier
+
+        if (_selectedCategory is not null && !_selectedCategory.Active)
+        {
+            _selectedCategory = null;
+        }
+
+        if (_selectedProject is not null && !_selectedProject.Active)
+        {
+            _selectedProject = null;
+        }
 
         _selectedId = 0;
         _activityTitle = "";
@@ -122,12 +133,12 @@
     private async Task<IEnumerable<Category>> CategorySearch(string value)
     {
         await Task.Yield();
-        return CategoriesState.Value.Categories;
+        return CategoriesState.Value.Categories.Where(x => x.Active);
     }
 
     private async Task<IEnumerable<Project>> ProjectSearch(string value)
     {
         await Task.Yield();
-        return ProjectsState.Value.Projects;
+        return ProjectsState.Value.Projects.Where(x => x.Active);
     }
 }
