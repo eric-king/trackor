@@ -1,0 +1,85 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
+        <MudForm @ref="categoryForm" @bind-IsValid="@formIsValid">
+            <MudGrid>
+                <MudItem xs="10">
+                    <MudTextField @ref="categoryFieldRef" T="string" Label="Category Title" @bind-Value="categoryTitle" Immediate="true" OnKeyUp="OnKeyUp" AutoFocus="true" Required="true" RequiredError="Category Title is required" />
+                </MudItem>
+                <MudItem xs="2">
+                    <MudCheckBox @bind-Checked="@active">Active</MudCheckBox>
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="8"></MudItem>
+                <MudItem xs="4" Style="text-align:right">
+                    @if (selectedId != 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ResetForm">Cancel Edit</MudButton>
+                    }
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="SaveCategory" Class="ml-3">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudFocusTrap>
+</MudPaper>
+
+@code {
+    int selectedId = 0;
+    string categoryTitle;
+    bool active = true;
+    bool formIsValid;
+
+    MudTextField<string> categoryFieldRef;
+    MudForm categoryForm;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        SubscribeToAction<CategoriesEditCategoryAction>(EditCategory);
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && formIsValid)
+        {
+            await SaveCategory();
+        }
+    }
+
+    private void EditCategory(CategoriesEditCategoryAction action)
+    {
+        if (action.CopyOnly == false)
+        {
+            selectedId = action.Category.Id;
+        }
+        categoryTitle = action.Category.Title;
+        active = action.Category.Active;
+        categoryForm.ResetValidation();
+        StateHasChanged();
+    }
+
+    private async Task SaveCategory()
+    {
+        var newCategory = new Category
+            {
+                Id = selectedId,
+                Title = categoryTitle,
+                Active = active
+            };
+
+        Dispatcher.Dispatch(new CategoriesSaveAction(newCategory));
+        await ResetForm();
+    }
+
+    private async Task ResetForm()
+    {
+        selectedId = 0;
+        categoryTitle = string.Empty;
+        active = true;
+        await categoryFieldRef.FocusAsync();
+    }
+}
