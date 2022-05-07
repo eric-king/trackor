@@ -1,0 +1,85 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
+        <MudForm @ref="projectForm" @bind-IsValid="@formIsValid">
+            <MudGrid>
+                <MudItem xs="10">
+                    <MudTextField @ref="projectTitleField" T="string" Label="Project Title" @bind-Value="projectTitle" Immediate="true" AutoFocus="true" Required="true" OnKeyUp="OnKeyUp" RequiredError="Project Title is required" />
+                </MudItem>
+                <MudItem xs="2">
+                    <MudCheckBox @bind-Checked="@active">Active</MudCheckBox>
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="8"></MudItem>
+                <MudItem xs="4" Style="text-align:right">
+                    @if (selectedId != 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ResetForm">Cancel Edit</MudButton>
+                    }
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!formIsValid)" OnClick="SaveProject" Class="ml-3">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudFocusTrap>
+</MudPaper>
+
+@code {
+    int selectedId = 0;
+    string projectTitle;
+    bool active = true;
+    bool formIsValid;
+
+    MudTextField<string> projectTitleField;
+    MudForm projectForm;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        SubscribeToAction<ProjectsEditProjectAction>(EditProject);
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && formIsValid)
+        {
+            await SaveProject();
+        }
+    }
+
+    private void EditProject(ProjectsEditProjectAction action)
+    {
+        if (action.CopyOnly == false)
+        {
+            selectedId = action.Project.Id;
+        }
+        projectTitle = action.Project.Title;
+        active = action.Project.Active;
+        projectForm.ResetValidation();
+        StateHasChanged();
+    }
+
+    private async Task SaveProject()
+    {
+        var newProject = new Project
+            {
+                Id = selectedId,
+                Title = projectTitle,
+                Active = active
+            };
+
+        Dispatcher.Dispatch(new ProjectsSaveAction(newProject));
+        await ResetForm();
+    }
+
+    private async Task ResetForm()
+    {
+        selectedId = 0;
+        projectTitle = string.Empty;
+        active = true;
+        await projectTitleField.FocusAsync();
+    }
+}

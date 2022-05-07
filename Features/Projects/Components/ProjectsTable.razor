@@ -1,0 +1,35 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+@inject IState<ProjectsState> ProjectsState
+
+<MudTable Items="@ProjectsState.Value.Projects" Hover="true" Elevation="6">
+    <ColGroup>
+        <col style="width: 70%;" />
+        <col style="width: 15%;" />
+        <col style="width: 15%;" />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>Title</MudTh>
+        <MudTh>Active</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Active">
+            <ActiveInactiveLabel IsActive="context.Active" />
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditProject(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
+            <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditProject(context)" Title="Edit"></MudIconButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+
+    private void EditProject(Project project, bool copyOnly = false)
+    {
+        Dispatcher.Dispatch(new ProjectsEditProjectAction(project, copyOnly));
+    }
+
+}
