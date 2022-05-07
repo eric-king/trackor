@@ -31,7 +31,9 @@
         <RowTemplate>
             <MudTd DataLabel="Id">@context.Id</MudTd>
             <MudTd DataLabel="Title">@context.Title</MudTd>
-            <MudTd DataLabel="Active">@context.Active</MudTd>
+            <MudTd DataLabel="Active">
+                <ActiveInactiveLabel IsActive="context.Active" />
+            </MudTd>
         </RowTemplate>
     </MudTable>
 }
