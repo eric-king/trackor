@@ -60,6 +60,16 @@
 
     protected override void OnInitialized()
     {
+        if (!CategoriesState.Value.Categories.Any())
+        {
+            Dispatcher.Dispatch(new CategoriesLoadAction());
+        }
+
+        if (!ProjectsState.Value.Projects.Any())
+        {
+            Dispatcher.Dispatch(new ProjectsLoadAction());
+        }
+
         base.OnInitialized();
         SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);
     }
