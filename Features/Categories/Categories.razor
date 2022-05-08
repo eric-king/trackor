@@ -13,15 +13,8 @@
     Categories
 </MudText>
 
-@if (!CategoriesState.Value.Categories.Any())
-{
-    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-}
-else
-{
-    <CategoryForm />
-    <CategoriesTable />
-}
+<CategoryForm />
+<CategoriesTable />
 
 @code {
 
