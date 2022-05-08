@@ -32,7 +32,7 @@ namespace Trackor.Features.Pomodoro
                 Initialized = false,
                 Running = false,
                 Finished = false,
-                TimeSpan = TimeSpan.FromSeconds(5),
+                TimeSpan = TimeSpan.FromMinutes(25),
                 Elapsed = TimeSpan.Zero,
             };
         }
@@ -85,7 +85,7 @@ namespace Trackor.Features.Pomodoro
         {
             return state with
             {
-                TimeSpan = TimeSpan.FromSeconds(5),
+                TimeSpan = TimeSpan.FromMinutes(25),
                 Elapsed = TimeSpan.Zero,
                 Running = false,
                 Finished = false
