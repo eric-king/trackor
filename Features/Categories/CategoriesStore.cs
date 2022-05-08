@@ -1,13 +1,16 @@
 ﻿using Fluxor;
+using Microsoft.EntityFrameworkCore;
 using SqliteWasmHelper;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.Categories;
 
 public record CategoriesLoadAction();
+public record CategoriesEditCategoryAction(Category Category, bool CopyOnly);
 public record CategoriesSetAction(Category[] Categories);
 public record CategoriesSaveAction(Category Category);
 public record CategoriesAddAction(Category Category);
+public record CategoriesUpdateAction(Category Category);
 
 public record CategoriesState
 {
@@ -43,10 +46,32 @@ public static class CategoriesReducers
     {
         var categoryList = state.Categories.ToList();
         categoryList.Add(action.Category);
+        
+        var newCategoryArray = categoryList
+               .OrderBy(x => x.Title)
+               .ToArray();
 
         return state with
         {
-            Categories = categoryList.OrderBy(x => x.Title).ToArray()
+            Categories = newCategoryArray
+        };
+    }
+
+    [ReducerMethod]
+    public static CategoriesState OnCategoryUpdate(CategoriesState state, CategoriesUpdateAction action)
+    {
+        var categoryList = state.Categories.ToList();
+        var existingCategory = categoryList.Single(x => x.Id == action.Category.Id);
+        categoryList.Remove(existingCategory);
+        categoryList.Add(action.Category);
+
+        var newCategoryArray = categoryList
+               .OrderBy(x => x.Title)
+               .ToArray();
+
+        return state with
+        {
+            Categories = newCategoryArray
         };
     }
 
@@ -73,7 +98,6 @@ public class CategoriesEffects
     public async Task OnLoadCategories(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
         var items = dbContext.Categories.ToArray();
         dispatcher.Dispatch(new CategoriesSetAction(items));
     }
@@ -82,8 +106,19 @@ public class CategoriesEffects
     public async Task OnCategorySave(CategoriesSaveAction action, IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        dbContext.Categories.Add(action.Category);
-        await dbContext.SaveChangesAsync();
-        dispatcher.Dispatch(new CategoriesAddAction(action.Category));
+
+        if (action.Category.Id == 0)
+        {
+            dbContext.Categories.Add(action.Category);
+            await dbContext.SaveChangesAsync();
+            dispatcher.Dispatch(new CategoriesAddAction(action.Category));
+        }
+        else
+        {
+            var tracking = dbContext.Categories.Attach(action.Category);
+            tracking.State = EntityState.Modified;
+            await dbContext.SaveChangesAsync();
+            dispatcher.Dispatch(new CategoriesUpdateAction(action.Category));
+        }
     }
 }

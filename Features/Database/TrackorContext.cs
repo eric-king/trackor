@@ -19,6 +19,7 @@ namespace Trackor.Features.Database
         public DbSet<ActivityLogItem> ActivityLogItems { get; set; } = null;
         public DbSet<Category> Categories { get; set; } = null;
         public DbSet<Project> Projects { get; set; } = null;
+        public DbSet<ApplicationSetting> ApplicationSettings { get; set; } = null;
     }
 
 }

@@ -1,13 +1,16 @@
 ﻿using Fluxor;
+using Microsoft.EntityFrameworkCore;
 using SqliteWasmHelper;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.Projects;
 
 public record ProjectsLoadAction();
+public record ProjectsEditProjectAction(Project Project, bool CopyOnly);
 public record ProjectsSetAction(Project[] Projects);
 public record ProjectsSaveAction(Project Project);
 public record ProjectsAddAction(Project Project);
+public record ProjectsUpdateAction(Project Project);
 
 public record ProjectsState
 {
@@ -44,9 +47,31 @@ public static class CoreReducers
         var projectList = state.Projects.ToList();
         projectList.Add(action.Project);
 
+        var newProjectArray = projectList
+            .OrderBy(x => x.Title)
+            .ToArray();
+
         return state with
         {
-            Projects = projectList.OrderBy(x => x.Title).ToArray()
+            Projects = newProjectArray
+        };
+    }
+
+    [ReducerMethod]
+    public static ProjectsState OnProjectUpdate(ProjectsState state, ProjectsUpdateAction action)
+    {
+        var projectList = state.Projects.ToList();
+        var existingProject = projectList.Single(x => x.Id == action.Project.Id);
+        projectList.Remove(existingProject);
+        projectList.Add(action.Project);
+
+        var newProjectArray = projectList
+               .OrderBy(x => x.Title)
+               .ToArray();
+
+        return state with
+        {
+            Projects = newProjectArray
         };
     }
 
@@ -73,17 +98,27 @@ public class ProjectsEffects
     public async Task OnProjectsLoad(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
-        var items = dbContext.Projects.ToArray();
+        var items = dbContext.Projects.ToList().OrderBy(x => x.Title).ToArray();
         dispatcher.Dispatch(new ProjectsSetAction(items));
     }
 
     [EffectMethod]
-    public async Task OnProjectsSave(ProjectsSaveAction action, IDispatcher dispatcher)
+    public async Task OnProjectSave(ProjectsSaveAction action, IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        dbContext.Projects.Add(action.Project);
-        await dbContext.SaveChangesAsync();
-        dispatcher.Dispatch(new ProjectsAddAction(action.Project));
+
+        if (action.Project.Id == 0)
+        {
+            dbContext.Projects.Add(action.Project);
+            await dbContext.SaveChangesAsync();
+            dispatcher.Dispatch(new ProjectsAddAction(action.Project));
+        }
+        else
+        {
+            var tracking = dbContext.Projects.Attach(action.Project);
+            tracking.State = EntityState.Modified;
+            await dbContext.SaveChangesAsync();
+            dispatcher.Dispatch(new ProjectsUpdateAction(action.Project));
+        }
     }
 }

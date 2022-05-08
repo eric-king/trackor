@@ -21,7 +21,7 @@
             </MudGrid>
             <MudGrid>
                 <MudItem xs="8">
-                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Required="true" xs="6" />
+                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Immediate="true" OnKeyUp="OnKeyUp" Required="true" xs="6" />
                 </MudItem>
                 <MudItem xs="2">
                     <MudNumericField @bind-Value="@_activityHours" Label="Hours" Min="0" Max="24" Variant="Variant.Text"></MudNumericField>
@@ -60,8 +60,26 @@
 
     protected override void OnInitialized()
     {
+        if (!CategoriesState.Value.Categories.Any())
+        {
+            Dispatcher.Dispatch(new CategoriesLoadAction());
+        }
+
+        if (!ProjectsState.Value.Projects.Any())
+        {
+            Dispatcher.Dispatch(new ProjectsLoadAction());
+        }
+
         base.OnInitialized();
         SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && _formIsValid)
+        {
+            await SaveActivityLogItem();
+        }
     }
 
     private async Task SaveActivityLogItem()
@@ -84,7 +102,18 @@
     private async Task ResetActivityLogForm()
     {
         // Leave Category, Project, and Date where they are
+        // unless they're inactive
         // to make subsequent entries easier
+
+        if (_selectedCategory is not null && !_selectedCategory.Active)
+        {
+            _selectedCategory = null;
+        }
+
+        if (_selectedProject is not null && !_selectedProject.Active)
+        {
+            _selectedProject = null;
+        }
 
         _selectedId = 0;
         _activityTitle = "";
@@ -114,12 +143,12 @@
     private async Task<IEnumerable<Category>> CategorySearch(string value)
     {
         await Task.Yield();
-        return CategoriesState.Value.Categories;
+        return CategoriesState.Value.Categories.Where(x => x.Active);
     }
 
     private async Task<IEnumerable<Project>> ProjectSearch(string value)
     {
         await Task.Yield();
-        return ProjectsState.Value.Projects;
+        return ProjectsState.Value.Projects.Where(x => x.Active);
     }
 }

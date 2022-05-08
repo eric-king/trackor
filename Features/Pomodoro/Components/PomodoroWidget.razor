@@ -1,0 +1,20 @@
+﻿@inherits FluxorComponent
+
+@inject IState<PomodoroState> PomodoroState
+@inject NavigationManager NavigationManager
+
+@if (PomodoroState.Value.Running || PomodoroState.Value.Finished)
+{
+    <MudChip Icon="@Icons.Outlined.Timer" Label="true" Color="chipColor" OnClick="NavigateToPomodoro">
+        Pomodoro @PomodoroState.Value.TimeSpan.ToString(@"mm\:ss")
+    </MudChip>
+}
+
+@code {
+    Color chipColor => PomodoroState.Value.Running ? Color.Info : Color.Warning;
+
+    private void NavigateToPomodoro()
+    {
+        NavigationManager.NavigateTo("/pomodoro");
+    }
+}

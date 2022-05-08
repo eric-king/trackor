@@ -52,6 +52,20 @@ public class LandingPageFeature : Feature<LandingPageState>
                 },
                 new LandingPageItem
                 {
+                    HeaderText = "Pomodoro",
+                    BodyText = "Direct your attention with manageable chunks of time",
+                    ImageUrl = "images/countdown_timer.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Pomodoro",
+                            Url = "/pomodoro"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
                     HeaderText = "Database",
                     BodyText = "Backup or Restore the Trackor database",
                     ImageUrl = "images/database.jpg",

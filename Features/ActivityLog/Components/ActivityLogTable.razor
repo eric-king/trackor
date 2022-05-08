@@ -7,6 +7,15 @@
 
 <MudPaper Class="mb-10" Elevation="6">
     <MudTable Items="@ActivityLogState.Value.ActivityLogItems" Hover="true">
+        <ColGroup>
+            <col style="width: 10%;" />
+            <col style="width: 15%;" />
+            <col style="width: 15%;" />
+            <col style="width: 10%;" />
+            <col />
+            <col style="width: 15%;" />
+        </ColGroup>
+
         <HeaderContent>
             <MudTh>Date</MudTh>
             <MudTh>Category</MudTh>

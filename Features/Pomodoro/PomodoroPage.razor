@@ -1,0 +1,70 @@
+﻿@page "/pomodoro"
+@inherits FluxorComponent
+
+@using Trackor.Features.ActivityLog.Components
+
+@inject IDispatcher Dispatcher
+@inject IState<PomodoroState> PomodoroState
+
+<PageTitle>Trackor - Pomodoro</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Outlined.Timer" /> Pomodoro
+</MudText>
+
+<MudGrid Class="mb-6">
+    <MudItem xs="12" Class="d-flex justify-center">
+        <MudPaper Elevation="6" class="d-flex mud-theme-primary rounded-circle align-center justify-center" style="height: 300px; width: 300px;">
+            <MudText Typo="Typo.h1">
+                @PomodoroState.Value.TimeSpan.ToString(@"mm\:ss")
+            </MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" Class="d-flex justify-center gap-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Filled.NotStarted" OnClick="StartTimer" Disabled="@(PomodoroState.Value.Running || PomodoroState.Value.Finished)">
+            Start
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Filled.StopCircle" OnClick="StopTimer" Disabled="@(!PomodoroState.Value.Running || PomodoroState.Value.Finished)">
+            Stop
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Filled.RestartAlt" OnClick="Reset" Disabled="@(PomodoroState.Value.Running)">
+            Reset
+        </MudButton>
+    </MudItem>
+    <MudItem xs="12" Class="d-flex justify-center gap-3">
+        <MudElement>Elapsed: @PomodoroState.Value.Elapsed.ToString(@"mm\:ss")</MudElement>
+    </MudItem>
+    <MudItem xs="12" Class="d-flex justify-center gap-3">
+        <MudCheckBox @bind-Checked="@logActivity" Label="Create an Activity Log entry"></MudCheckBox>
+    </MudItem>
+</MudGrid>
+
+@if (logActivity)
+{
+    <ActivityLogForm />
+}
+
+@code {
+    private bool logActivity = false;
+
+    protected override void OnInitialized()
+    {
+        Dispatcher.Dispatch(new PomodoroInitializeTimerAction());
+        base.OnInitialized();
+    }
+
+    private void StartTimer()
+    {
+        Dispatcher.Dispatch(new PomodoroStartTimerAction());
+    }
+
+    private void StopTimer()
+    {
+        Dispatcher.Dispatch(new PomodoroStopTimerAction());
+    }
+
+    private void Reset()
+    {
+        Dispatcher.Dispatch(new PomodoroResetAction());
+    }
+}
