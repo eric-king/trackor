@@ -12,15 +12,8 @@
     <MudIcon Icon="@Icons.Material.Filled.Handyman" /> Projects
 </MudText>
 
-@if (!ProjectsState.Value.Projects.Any())
-{
-    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-}
-else
-{
-    <ProjectForm />
-    <ProjectsTable />
-}
+<ProjectForm />
+<ProjectsTable />
 
 @code {
 
