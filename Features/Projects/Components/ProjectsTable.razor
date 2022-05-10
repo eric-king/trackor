@@ -12,6 +12,7 @@
     <HeaderContent>
         <MudTh>Title</MudTh>
         <MudTh>Active</MudTh>
+        <MudTh Style="text-align:center"><MudIcon Icon="@Icons.Filled.Construction"></MudIcon></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Title">@context.Title</MudTd>
@@ -19,6 +20,7 @@
             <ActiveInactiveLabel IsActive="context.Active" />
         </MudTd>
         <MudTd>
+            <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="() => DeleteProject(context)" Title="Delete"></MudIconButton>
             <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditProject(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
             <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditProject(context)" Title="Edit"></MudIconButton>
         </MudTd>
@@ -32,4 +34,8 @@
         Dispatcher.Dispatch(new ProjectsEditProjectAction(project, copyOnly));
     }
 
+    private void DeleteProject(Project project)
+    {
+        Dispatcher.Dispatch(new ProjectsDeleteAction(project));
+    }
 }

@@ -21,7 +21,7 @@
             </MudGrid>
             <MudGrid>
                 <MudItem xs="8">
-                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Immediate="true" OnKeyUp="OnKeyUp" Required="true" xs="6" />
+                    <MudTextField @ref="_activityFieldRef" T="string" Label="Activity" @bind-Value="_activityTitle" Immediate="true" OnKeyUp="OnKeyUp" xs="6" Required="true" RequiredError=""/>
                 </MudItem>
                 <MudItem xs="2">
                     <MudNumericField @bind-Value="@_activityHours" Label="Hours" Min="0" Max="24" Variant="Variant.Text"></MudNumericField>

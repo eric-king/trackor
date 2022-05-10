@@ -22,7 +22,7 @@
             <MudTh>Project</MudTh>
             <MudTh>Duration</MudTh>
             <MudTh>Activity</MudTh>
-            <MudTh></MudTh>
+            <MudTh Style="text-align:center"><MudIcon Icon="@Icons.Filled.Construction"></MudIcon></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Date">@context.Date</MudTd>
@@ -31,6 +31,7 @@
             <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
             <MudTd DataLabel="Activity">@context.Title</MudTd>
             <MudTd>
+                <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="() => DeleteActivityLogItem(context)" Title="Delete"></MudIconButton>
                 <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
                 <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)" Title="Edit"></MudIconButton>
             </MudTd>
@@ -42,5 +43,10 @@
     private void EditActivityLogItem(ActivityLogItem activityLogItem, bool copyOnly = false)
     {
         Dispatcher.Dispatch(new ActivityLogEditItemAction(activityLogItem, copyOnly));
+    }
+
+    private void DeleteActivityLogItem(ActivityLogItem activityLogItem)
+    {
+        Dispatcher.Dispatch(new ActivityLogDeleteItemAction(activityLogItem));
     }
 }

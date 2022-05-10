@@ -11,6 +11,8 @@ public record ActivityLogEditItemAction(ActivityLogItem Item, bool CopyOnly);
 public record ActivityLogAddItemAction(ActivityLogItem Item);
 public record ActivityLogUpdateItemAction(ActivityLogItem Item);
 public record ActivityLogSaveItemAction(ActivityLogItem Item);
+public record ActivityLogDeleteItemAction(ActivityLogItem Item);
+public record ActivityLogRemoveItemAction(ActivityLogItem Item);
 public record ActivityLogArchiveAction(DateOnly StartDate, DateOnly EndDate);
 public record ActivityLogUnarchiveAction(DateOnly StartDate, DateOnly EndDate);
 
@@ -80,6 +82,23 @@ public static class ActivityLogReducers
         };
     }
 
+    [ReducerMethod]
+    public static ActivityLogState OnActivityLogRemove(ActivityLogState state, ActivityLogRemoveItemAction action)
+    {
+        var itemList = state.ActivityLogItems.ToList();
+        var existingItem = itemList.Single(x => x.Id == action.Item.Id);
+        itemList.Remove(existingItem);
+        var newItemArray = itemList
+                .OrderByDescending(x => x.Date)
+                .ThenByDescending(x => x.Id)
+                .ToArray();
+
+        return state with
+        {
+            ActivityLogItems = newItemArray
+        };
+    }
+
     [ReducerMethod(typeof(DatabaseDeletedAction))]
     public static ActivityLogState OnDatabaseDeleted(ActivityLogState state)
     {
@@ -123,7 +142,7 @@ public class ActivityLogEffects
             await dbContext.SaveChangesAsync();
             dispatcher.Dispatch(new ActivityLogAddItemAction(action.Item));
         }
-        else 
+        else
         {
             var tracking = dbContext.ActivityLogItems.Attach(action.Item);
             tracking.State = EntityState.Modified;
@@ -133,19 +152,28 @@ public class ActivityLogEffects
     }
 
     [EffectMethod]
-    public async Task OnActivityLogArchive(ActivityLogArchiveAction action, IDispatcher dispatcher) 
+    public async Task OnActivityLogDelete(ActivityLogDeleteItemAction action, IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
 
-        var items = dbContext.ActivityLogItems.AsNoTracking()
+        var tracking = dbContext.ActivityLogItems.Attach(action.Item);
+        tracking.State = EntityState.Deleted;
+        await dbContext.SaveChangesAsync();
+        dispatcher.Dispatch(new ActivityLogRemoveItemAction(action.Item));
+    }
+
+    [EffectMethod]
+    public async Task OnActivityLogArchive(ActivityLogArchiveAction action, IDispatcher dispatcher)
+    {
+        using var dbContext = await _db.CreateDbContextAsync();
+
+        var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= action.StartDate)
             .Where(x => x.Date <= action.EndDate);
 
         foreach (var item in items)
         {
-            var archivedItem = item with { Archived = true };
-            var tracking = dbContext.Attach(archivedItem);
-            tracking.State = EntityState.Modified;
+            item.Archived = true;
         }
 
         await dbContext.SaveChangesAsync();
@@ -157,15 +185,13 @@ public class ActivityLogEffects
     {
         using var dbContext = await _db.CreateDbContextAsync();
 
-        var items = dbContext.ActivityLogItems.AsNoTracking()
+        var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= action.StartDate)
             .Where(x => x.Date <= action.EndDate);
 
         foreach (var item in items)
         {
-            var archivedItem = item with { Archived = false };
-            var tracking = dbContext.Attach(archivedItem);
-            tracking.State = EntityState.Modified;
+            item.Archived = false;
         }
 
         await dbContext.SaveChangesAsync();
