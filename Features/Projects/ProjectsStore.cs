@@ -1,6 +1,7 @@
 ﻿using Fluxor;
 using Microsoft.EntityFrameworkCore;
 using SqliteWasmHelper;
+using Trackor.Features.ActivityLog;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.Projects;
@@ -11,6 +12,8 @@ public record ProjectsSetAction(Project[] Projects);
 public record ProjectsSaveAction(Project Project);
 public record ProjectsAddAction(Project Project);
 public record ProjectsUpdateAction(Project Project);
+public record ProjectsDeleteAction(Project Project);
+public record ProjectsRemoveAction(Project Project);
 
 public record ProjectsState
 {
@@ -75,6 +78,23 @@ public static class CoreReducers
         };
     }
 
+    [ReducerMethod]
+    public static ProjectsState OnProjectRemove(ProjectsState state, ProjectsRemoveAction action)
+    {
+        var projectList = state.Projects.ToList();
+        var existingProject = projectList.Single(x => x.Id == action.Project.Id);
+        projectList.Remove(existingProject);
+
+        var newProjectArray = projectList
+               .OrderBy(x => x.Title)
+               .ToArray();
+
+        return state with
+        {
+            Projects = newProjectArray
+        };
+    }
+
     [ReducerMethod(typeof(DatabaseDeletedAction))]
     public static ProjectsState OnDatabaseDeleted(ProjectsState state)
     {
@@ -120,5 +140,18 @@ public class ProjectsEffects
             await dbContext.SaveChangesAsync();
             dispatcher.Dispatch(new ProjectsUpdateAction(action.Project));
         }
+    }
+
+    [EffectMethod]
+    public async Task OnProjectDelete(ProjectsDeleteAction action, IDispatcher dispatcher)
+    {
+        using var dbContext = await _db.CreateDbContextAsync();
+        var logsWithThisProject = dbContext.ActivityLogItems.Where(x => x.ProjectId == action.Project.Id);
+        foreach (var log in logsWithThisProject) { log.ProjectId = null; }
+        var tracking = dbContext.Projects.Attach(action.Project);
+        tracking.State = EntityState.Deleted;
+        await dbContext.SaveChangesAsync();
+        dispatcher.Dispatch(new ProjectsRemoveAction(action.Project));
+        dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 }
