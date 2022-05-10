@@ -1,12 +1,12 @@
 ﻿namespace Trackor.Features.ActivityLog;
 
-public record ActivityLogItem
+public class ActivityLogItem
 {
-    public int Id { get; init; }
-    public int? CategoryId { get; init; }
-    public int? ProjectId { get; init; }
-    public string Title { get; init; }
-    public DateOnly Date { get; init; }
-    public TimeSpan Duration { get; init; }
-    public bool Archived { get; init; }
+    public int Id { get; set; }
+    public int? CategoryId { get; set; }
+    public int? ProjectId { get; set; }
+    public string Title { get; set; }
+    public DateOnly Date { get; set; }
+    public TimeSpan Duration { get; set; }
+    public bool Archived { get; set; }
 }

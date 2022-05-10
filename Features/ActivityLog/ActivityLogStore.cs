@@ -167,15 +167,13 @@ public class ActivityLogEffects
     {
         using var dbContext = await _db.CreateDbContextAsync();
 
-        var items = dbContext.ActivityLogItems.AsNoTracking()
+        var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= action.StartDate)
             .Where(x => x.Date <= action.EndDate);
 
         foreach (var item in items)
         {
-            var archivedItem = item with { Archived = true };
-            var tracking = dbContext.Attach(archivedItem);
-            tracking.State = EntityState.Modified;
+            item.Archived = true;
         }
 
         await dbContext.SaveChangesAsync();
@@ -187,15 +185,13 @@ public class ActivityLogEffects
     {
         using var dbContext = await _db.CreateDbContextAsync();
 
-        var items = dbContext.ActivityLogItems.AsNoTracking()
+        var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= action.StartDate)
             .Where(x => x.Date <= action.EndDate);
 
         foreach (var item in items)
         {
-            var archivedItem = item with { Archived = false };
-            var tracking = dbContext.Attach(archivedItem);
-            tracking.State = EntityState.Modified;
+            item.Archived = false;
         }
 
         await dbContext.SaveChangesAsync();

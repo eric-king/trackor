@@ -7,7 +7,7 @@
         <MudForm @ref="categoryForm" @bind-IsValid="@formIsValid">
             <MudGrid>
                 <MudItem xs="10">
-                    <MudTextField @ref="categoryFieldRef" T="string" Label="Category Title" @bind-Value="categoryTitle" Immediate="true" OnKeyUp="OnKeyUp" AutoFocus="true" Required="true" RequiredError="Category Title is required" />
+                    <MudTextField @ref="categoryFieldRef" T="string" Label="Category Title" @bind-Value="categoryTitle" Immediate="true" OnKeyUp="OnKeyUp" AutoFocus="true" Required="true" RequiredError="" />
                 </MudItem>
                 <MudItem xs="2">
                     <MudCheckBox @bind-Checked="@active">Active</MudCheckBox>
