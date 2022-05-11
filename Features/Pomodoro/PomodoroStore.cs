@@ -1,10 +1,15 @@
 ﻿using Fluxor;
+using SqliteWasmHelper;
 using System.Timers;
+using Trackor.Features.Database;
 
 namespace Trackor.Features.Pomodoro
 {
     public record PomodoroTickAction();
     public record PomodoroInitializeTimerAction();
+    public record PomodoroLoadDurationAction();
+    public record PomodoroSaveDurationAction(int Duration);
+    public record PomodoroSetDurationAction(int Duration);
     public record PomodoroSetInitializedAction();
     public record PomodoroStartTimerAction();
     public record PomodoroStopTimerAction();
@@ -19,6 +24,7 @@ namespace Trackor.Features.Pomodoro
         public bool Finished { get; init; }
         public TimeSpan TimeSpan { get; init; }
         public TimeSpan Elapsed { get; init; }
+        public int DefaultDurationInMinutes { get; init; }
     }
 
     public class PomodoroFeature : Feature<PomodoroState>
@@ -27,19 +33,31 @@ namespace Trackor.Features.Pomodoro
 
         protected override PomodoroState GetInitialState()
         {
+            int defaultduration = 25;
             return new PomodoroState
             {
                 Initialized = false,
                 Running = false,
                 Finished = false,
-                TimeSpan = TimeSpan.FromMinutes(25),
+                TimeSpan = TimeSpan.FromMinutes(defaultduration),
                 Elapsed = TimeSpan.Zero,
+                DefaultDurationInMinutes = defaultduration
             };
         }
     }
 
     public static class PomodoroReducers
     {
+        [ReducerMethod]
+        public static PomodoroState OnSetDuration(PomodoroState state, PomodoroSetDurationAction action)
+        {
+            return state with
+            {
+                DefaultDurationInMinutes = action.Duration,
+                TimeSpan = TimeSpan.FromMinutes(action.Duration)
+            };
+        }
+
         [ReducerMethod(typeof(PomodoroSetInitializedAction))]
         public static PomodoroState OnSetInitialized(PomodoroState state)
         {
@@ -85,7 +103,7 @@ namespace Trackor.Features.Pomodoro
         {
             return state with
             {
-                TimeSpan = TimeSpan.FromMinutes(25),
+                TimeSpan = TimeSpan.FromMinutes(state.DefaultDurationInMinutes),
                 Elapsed = TimeSpan.Zero,
                 Running = false,
                 Finished = false
@@ -95,13 +113,15 @@ namespace Trackor.Features.Pomodoro
 
     public class PomodoroEffects
     {
-        private PomodoroTimerService _timerService;
-        private IState<PomodoroState> _state;
+        private readonly PomodoroTimerService _timerService;
+        private readonly IState<PomodoroState> _state;
+        private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
 
-        public PomodoroEffects(PomodoroTimerService timerService, IState<PomodoroState> state)
+        public PomodoroEffects(PomodoroTimerService timerService, IState<PomodoroState> state, ISqliteWasmDbContextFactory<TrackorContext> db)
         {
             _timerService = timerService;
             _state = state;
+            _db = db;
         }
 
         [EffectMethod(typeof(PomodoroInitializeTimerAction))]
@@ -114,6 +134,30 @@ namespace Trackor.Features.Pomodoro
             var timer = _timerService.Timer;
             timer.Elapsed += (object source, ElapsedEventArgs e) => dispatcher.Dispatch(new PomodoroTickAction());
             dispatcher.Dispatch(new PomodoroSetInitializedAction());
+        }
+
+        [EffectMethod(typeof(PomodoroLoadDurationAction))]
+        public async Task OnLoadDuration(IDispatcher dispatcher)
+        {
+            using var dbContext = await _db.CreateDbContextAsync();
+            var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == "PomodoroDuration");
+            if (appSetting is null)
+            {
+                appSetting = new ApplicationSetting { Key = "PomodoroDuration", Value = 25.ToString() };
+                dbContext.ApplicationSettings.Add(appSetting);
+                dbContext.SaveChanges();
+            }
+            dispatcher.Dispatch(new PomodoroSetDurationAction(int.Parse(appSetting.Value)));
+        }
+
+        [EffectMethod]
+        public async Task OnSaveDuration(PomodoroSaveDurationAction action, IDispatcher dispatcher)
+        {
+            using var dbContext = await _db.CreateDbContextAsync();
+            var appSetting = dbContext.ApplicationSettings.Single(x => x.Key == "PomodoroDuration");
+            appSetting.Value = action.Duration.ToString();
+            dbContext.SaveChanges();
+            dispatcher.Dispatch(new PomodoroSetDurationAction(action.Duration));
         }
 
         [EffectMethod(typeof(PomodoroStartTimerAction))]

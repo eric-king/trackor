@@ -54,12 +54,10 @@ public class ThemeEffects
         var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == "IsDarkMode");
         if (appSetting is null) 
         {
-            dispatcher.Dispatch("appSetting is null");
             appSetting = new ApplicationSetting { Key = "IsDarkMode", Value = false.ToString() };
             dbContext.ApplicationSettings.Add(appSetting);
             dbContext.SaveChanges();
         }
-        dispatcher.Dispatch($"appSetting.IsDarkMode: {appSetting.Value}");
         dispatcher.Dispatch(new ThemeSetDarkModeAction(bool.Parse(appSetting.Value)));
     }
 
