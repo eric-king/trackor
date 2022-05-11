@@ -33,6 +33,20 @@ public class LandingPageFeature : Feature<LandingPageState>
                 },
                 new LandingPageItem
                 {
+                    HeaderText = "Task List",
+                    BodyText = "Keep track of your tasks",
+                    ImageUrl = "images/stickies.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Task List",
+                            Url = "/tasklist"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
                     HeaderText = "Organize",
                     BodyText = "Organize your Trackor content",
                     ImageUrl = "images/organize.jpg",

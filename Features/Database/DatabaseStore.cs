@@ -95,6 +95,11 @@ public class DatabaseEffects
     {
         var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
         var dbContext = await _db.CreateDbContextAsync();
+
+        //var dbCreationSql = dbContext.Database.GenerateCreateScript();
+        //Console.WriteLine("Db Creation SQL:");
+        //Console.WriteLine(dbCreationSql);
+
         var migrator = new TrackorDbMigrator(dbContext);
         bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
 
