@@ -1,4 +1,5 @@
 ﻿using Fluxor;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
 using SqliteWasmHelper;
 using Trackor.Features.Theme;
@@ -9,6 +10,7 @@ public record DatabaseSetUpDbAction();
 public record DatabaseSetDbCacheModuleAction(IJSObjectReference DbCacheModule);
 public record DatabaseBuildDownloadUrlAction();
 public record DatabaseSetDownloadUrlAction(string Url);
+public record DatabaseSetDbVersionAction(string DbVersion);
 public record DatabaseDeleteAction();
 public record DatabaseDeletedAction();
 public record DatabaseUploadAction(byte[] DbFile);
@@ -17,6 +19,7 @@ public record DatabaseUploadedAction();
 public record DatabaseState
 {
     public string DownloadUrl { get; init; }
+    public string DbVersion { get; init; }
     public IJSObjectReference DbCacheModule { get; init; }
 }
 
@@ -29,6 +32,7 @@ public class DatabaseFeature : Feature<DatabaseState>
         return new DatabaseState
         {
             DownloadUrl = string.Empty,
+            DbVersion = "Unknown",
             DbCacheModule = null
         };
     }
@@ -42,6 +46,15 @@ public static class CoreReducers
         return state with
         {
             DbCacheModule = action.DbCacheModule
+        };
+    }
+
+    [ReducerMethod]
+    public static DatabaseState OnSetDbVersion(DatabaseState state, DatabaseSetDbVersionAction action)
+    {
+        return state with
+        {
+            DbVersion = action.DbVersion
         };
     }
 
@@ -78,11 +91,25 @@ public class DatabaseEffects
     }
 
     [EffectMethod(typeof(DatabaseSetUpDbAction))]
-    public async Task OnSetupDbModule(IDispatcher dispatcher)
+    public async Task OnSetupDb(IDispatcher dispatcher)
     {
         var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
         var dbContext = await _db.CreateDbContextAsync();
-        _ = await dbContext.Database.EnsureCreatedAsync();
+        var migrator = new TrackorDbMigrator(dbContext);
+        bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
+
+        string dbVersion;
+        if (freshDbCreated)
+        {
+            dbVersion = await migrator.ApplyCurrentDbVersionAsync();
+        }
+        else 
+        {
+            var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == ApplicationSettingKeys.DbVersion);
+            dbVersion = await migrator.EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
+        }
+
+        dispatcher.Dispatch(new DatabaseSetDbVersionAction(dbVersion));
         dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));
         dispatcher.Dispatch(new ThemeLoadDarkModeAction());
     }

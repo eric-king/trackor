@@ -16,7 +16,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped(sp => new PomodoroTimerService());
 builder.Services.AddMudServices();
 builder.Services.AddFluxor(o => o.ScanAssemblies(typeof(Program).Assembly));
-builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => 
-    options.UseSqlite("Data Source=trackor.sqlite3", x => x.MigrationsAssembly(nameof(Trackor))));
+builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => options.UseSqlite("Data Source=trackor.sqlite3"));
 
 await builder.Build().RunAsync();
