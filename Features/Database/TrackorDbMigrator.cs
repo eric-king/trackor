@@ -21,23 +21,24 @@ namespace Trackor.Features.Database
 
         public async Task<string> EnsureDbMigratedAsync(string dbVersion)
         {
-            if (string.IsNullOrEmpty(dbVersion))
-            {
-                return await ApplyCurrentDbVersionAsync();
-            }
-
             if (dbVersion == CurrentDbVersion) 
             {
                 return CurrentDbVersion;
             }
 
-            if (dbVersion == "1.0")
+            if (string.IsNullOrEmpty(dbVersion) || dbVersion == "1.0")
             {
                 await Migrate_101_TaskListItems();
                 dbVersion = CurrentDbVersion;
             }
 
             return dbVersion;
+        }
+
+        private async Task ApplyDbVersionAsync(string dbVersion)
+        {
+            _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = ApplicationSettingKeys.DbVersion, Value = dbVersion });
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task Migrate_101_TaskListItems()
@@ -49,10 +50,11 @@ namespace Trackor.Features.Database
                 ""Narrative"" TEXT NULL,
                 ""Priority"" INTEGER NOT NULL,
                 ""Status"" INTEGER NOT NULL,
-                ""Due"" TEXT NOT NULL
+                ""Due"" TEXT NULL
             );";
 
             _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_Task_List_Items);
+            await ApplyDbVersionAsync("1.01");
         }
     }
 }

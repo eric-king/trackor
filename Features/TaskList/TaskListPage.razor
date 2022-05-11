@@ -1,13 +1,83 @@
 ﻿@page "/tasklist"
 @inherits FluxorComponent
 
+@inject IState<TaskListState> TaskListState
+@inject IDispatcher Dispatcher
+
 <PageTitle>Trackor - Task List</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">
     <MudIcon Icon="@Icons.Outlined.Task" /> Task List
 </MudText>
 
+<MudDropContainer T="TaskListItem" Items="_tasks" ItemsSelector="@((taskListItem,column) => taskListItem.Status.ToString() == column)" ItemDropped="TaskUpdated" Class="d-flex flex-row">
+    <ChildContent>
+        <MudPaper Elevation="0" Width="300px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Add A Task</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField Label="Task" @bind-Value="_newTaskNarrative" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTask">Add</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudPaper>
+        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
+            <MudDropZone T="TaskListItem" Identifier="0" Class="mud-height-full">
+                <MudText Typo="Typo.h6" Class="mb-3">To Do</MudText>
+            </MudDropZone>
+        </MudPaper>
+        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
+            <MudDropZone T="TaskListItem" Identifier="1" Class="mud-height-full">
+                <MudText Typo="Typo.h6" Class="mb-3">In Progress</MudText>
+            </MudDropZone>
+        </MudPaper>
+        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
+            <MudDropZone T="TaskListItem" Identifier="2" Class="mud-height-full">
+                <MudText Typo="Typo.h6" Class="mb-3">Done</MudText>
+            </MudDropZone>
+        </MudPaper>
+    </ChildContent>
+    <ItemRenderer>
+        <MudPaper Elevation="6" Class="pa-4 rounded-lg my-3">@context.Narrative</MudPaper>
+    </ItemRenderer>
+</MudDropContainer>
 
 @code {
 
+    private string _newTaskNarrative { get; set; }
+    private TaskListItem[] _tasks => TaskListState.Value.Tasks;
+
+    protected override void OnInitialized()
+    {
+        if (!TaskListState.Value.Tasks.Any())
+        {
+            Dispatcher.Dispatch(new TaskListLoadAction());
+        }
+        base.OnInitialized();
+    }
+
+    private void AddTask()
+    {
+        var newTask = new TaskListItem
+            {
+                Narrative = _newTaskNarrative,
+                Status = 0,
+                Due = DateOnly.FromDateTime(DateTime.Now.AddDays(7))
+            };
+
+        _newTaskNarrative = null;
+        Dispatcher.Dispatch(new TaskListSaveTaskAction(newTask));
+    }
+
+    private void TaskUpdated(MudItemDropInfo<TaskListItem> info)
+    {
+        info.Item.Status = int.Parse(info.DropzoneIdentifier);
+        Dispatcher.Dispatch(new TaskListSaveTaskAction(info.Item));
+    }
 }

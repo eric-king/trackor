@@ -8,6 +8,6 @@
         public string Narrative { get; set; }
         public int Priority { get; set; }
         public int Status { get; set; }
-        public DateOnly Due { get; set; }
+        public DateOnly? Due { get; set; }
     }
 }
