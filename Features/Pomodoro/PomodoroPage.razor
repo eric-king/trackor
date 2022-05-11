@@ -14,7 +14,7 @@
 
 <MudGrid Class="mb-6">
     <MudItem xs="12" Class="d-flex justify-center">
-        <MudPaper Elevation="6" class="d-flex mud-theme-primary rounded-circle align-center justify-center" style="height: 300px; width: 300px;">
+        <MudPaper Elevation="6" class="@circleCss" style="height: 300px; width: 300px;">
             <MudText Typo="Typo.h1">
                 @PomodoroState.Value.TimeSpan.ToString(@"mm\:ss")
             </MudText>
@@ -31,9 +31,19 @@
             Reset
         </MudButton>
     </MudItem>
-    <MudItem xs="12" Class="d-flex justify-center gap-3">
-        <MudElement>Elapsed: @PomodoroState.Value.Elapsed.ToString(@"mm\:ss")</MudElement>
+    <MudItem xs="12" Class="d-flex justify-center align-center gap-3">
+        <MudText>Duration:</MudText>
+        <MudButton OnClick="() => editingDuration = true" Variant="Variant.Outlined" Size="Size.Small" Class="mr-6" Disabled="@(PomodoroState.Value.Running || PomodoroState.Value.Finished)">@PomodoroState.Value.DefaultDurationInMinutes:00</MudButton>
+        <MudText>Elapsed: @PomodoroState.Value.Elapsed.ToString(@"mm\:ss")</MudText>
     </MudItem>
+    @if (editingDuration)
+    {
+        <MudItem xs="12" Class="d-flex justify-center align-center gap-3">
+            <MudSlider @bind-Value="durationSliderValue" Min="1" Max="59" Step="1" ValueLabel="true" Style="width: 50%;">@durationSliderValue</MudSlider>
+            <MudButton OnClick="SaveDuration" Variant="Variant.Outlined" Color="Color.Primary">Save Duration</MudButton>
+            <MudButton OnClick="() => editingDuration = false" Variant="Variant.Outlined" Color="Color.Default">Cancel</MudButton>
+        </MudItem>
+    }
     <MudItem xs="12" Class="d-flex justify-center gap-3">
         <MudCheckBox @bind-Checked="@logActivity" Label="Create an Activity Log entry"></MudCheckBox>
     </MudItem>
@@ -46,9 +56,37 @@
 
 @code {
     private bool logActivity = false;
+    private bool editingDuration = false;
+    private double durationSliderValue;
+
+    private string circleCss
+    {
+        get
+        {
+            var baseCss = "d-flex rounded-circle align-center justify-center";
+            string colorCss = "";
+
+            if (PomodoroState.Value.Finished)
+            {
+                colorCss = "mud-theme-warning";
+            }
+            else if (PomodoroState.Value.Running)
+            {
+                colorCss = "mud-theme-info";
+            }
+            else
+            {
+                colorCss = "mud-theme-primary";
+            }
+
+            return $"{baseCss} {colorCss}";
+        }
+    }
 
     protected override void OnInitialized()
     {
+        SubscribeToAction<PomodoroSetDurationAction>(action => durationSliderValue = action.Duration);
+        Dispatcher.Dispatch(new PomodoroLoadDurationAction());
         Dispatcher.Dispatch(new PomodoroInitializeTimerAction());
         base.OnInitialized();
     }
@@ -66,5 +104,12 @@
     private void Reset()
     {
         Dispatcher.Dispatch(new PomodoroResetAction());
+    }
+
+    private void SaveDuration()
+    {
+        editingDuration = false;
+        var newDuration = (int)durationSliderValue;
+        Dispatcher.Dispatch(new PomodoroSaveDurationAction(newDuration));
     }
 }

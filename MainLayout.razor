@@ -38,7 +38,7 @@ else
             <MudIconButton Icon="@themeIcon" Color="Color.Inherit" OnClick="ToggleThemeMode" Class="mr-3" />
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/eric-king/trackor/" Target="_blank" />
         </MudAppBar>
-        <MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="6">
+        <MudDrawer @bind-Open="drawerOpen" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="6">
             <NavMenu />
         </MudDrawer>
         <MudMainContent>

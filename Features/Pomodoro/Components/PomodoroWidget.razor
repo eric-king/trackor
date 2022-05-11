@@ -2,19 +2,22 @@
 
 @inject IState<PomodoroState> PomodoroState
 @inject NavigationManager NavigationManager
+@inject IJSRuntime _jsRuntime
 
 @if (PomodoroState.Value.Running || PomodoroState.Value.Finished)
 {
-    <MudChip Icon="@Icons.Outlined.Timer" Label="true" Color="chipColor" OnClick="NavigateToPomodoro">
+    <MudChip Icon="@Icons.Outlined.Timer" Label="true" Color="chipColor" OnClick="@(() => NavigationManager.NavigateTo("/pomodoro"))">
         Pomodoro @PomodoroState.Value.TimeSpan.ToString(@"mm\:ss")
     </MudChip>
 }
+<audio id="sound-ding" src="sounds/ding.mp3" />
 
 @code {
     Color chipColor => PomodoroState.Value.Running ? Color.Info : Color.Warning;
 
-    private void NavigateToPomodoro()
+    protected override void OnInitialized()
     {
-        NavigationManager.NavigateTo("/pomodoro");
+        SubscribeToAction<PomodoroSetFinishedAction>(async action => await _jsRuntime.InvokeAsync<string>("PlaySound", "sound-ding"));
+        base.OnInitialized();
     }
 }
