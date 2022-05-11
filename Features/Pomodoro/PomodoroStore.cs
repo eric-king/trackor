@@ -139,6 +139,9 @@ namespace Trackor.Features.Pomodoro
         [EffectMethod(typeof(PomodoroLoadDurationAction))]
         public async Task OnLoadDuration(IDispatcher dispatcher)
         {
+            // bail if already initialized
+            if (_state.Value.Initialized) return;
+
             using var dbContext = await _db.CreateDbContextAsync();
             var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == "PomodoroDuration");
             if (appSetting is null)
