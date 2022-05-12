@@ -20,7 +20,10 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudTextField Label="Task" @bind-Value="_newTaskNarrative" />
+                    <CategoryPicker @ref="_categoryPicker" />
+                    <ProjectPicker @ref="_projectPicker" />
+                    <MudTextField Label="Task" @bind-Value="_narrative" />
+                     <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTask">Add</MudButton>
@@ -50,7 +53,11 @@
 
 @code {
 
-    private string _newTaskNarrative { get; set; }
+    private CategoryPicker _categoryPicker;
+    private ProjectPicker _projectPicker;
+    private string _narrative { get; set; }
+    DateTime? _dueDate { get; set; }
+
     private TaskListItem[] _tasks => TaskListState.Value.Tasks;
 
     protected override void OnInitialized()
@@ -66,12 +73,14 @@
     {
         var newTask = new TaskListItem
             {
-                Narrative = _newTaskNarrative,
+                Narrative = _narrative,
+                CategoryId = _categoryPicker.SelectedCategory?.Id,
+                ProjectId = _projectPicker.SelectedProject?.Id,
                 Status = 0,
-                Due = DateOnly.FromDateTime(DateTime.Now.AddDays(7))
+                Due = _dueDate.HasValue ? DateOnly.FromDateTime(_dueDate.Value) : null
             };
 
-        _newTaskNarrative = null;
+        _narrative = null;
         Dispatcher.Dispatch(new TaskListSaveTaskAction(newTask));
     }
 

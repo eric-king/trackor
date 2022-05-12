@@ -1,0 +1,43 @@
+﻿@inherits FluxorComponent
+
+@inject IState<ProjectsState> ProjectsState
+@inject IDispatcher Dispatcher
+
+<MudAutocomplete T="Project"
+                 Label="Project"
+                 @bind-Value="_selectedProject"
+                 SearchFunc="@ProjectSearch"
+                 ToStringFunc="@( c => c == null ? null : $"{c.Title}")"
+                 ResetValueOnEmptyText="true" />
+
+@code {
+
+    public Project SelectedProject => _selectedProject;
+
+    private Project _selectedProject { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!ProjectsState.Value.Projects.Any())
+        {
+            Dispatcher.Dispatch(new ProjectsLoadAction());
+        }
+        base.OnInitialized();
+    }
+
+    public void Reset()
+    {
+        _selectedProject = null;
+    }
+
+    public void SetProject(int? projectId)
+    {
+        _selectedProject = projectId == null ? null : ProjectsState.Value.Projects.Single(x => x.Id == projectId);
+    }
+
+    private async Task<IEnumerable<Project>> ProjectSearch(string value)
+    {
+        await Task.Yield();
+        return ProjectsState.Value.Projects.Where(x => x.Active);
+    }
+}
