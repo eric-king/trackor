@@ -12,23 +12,21 @@ namespace Trackor.Features.Database
             _dbContext = dbContext;
         }
 
+        public async Task<string> ApplyCurrentDbVersionAsync()
+        {
+            _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = ApplicationSettingKeys.DbVersion, Value = CurrentDbVersion });
+            await _dbContext.SaveChangesAsync();
+            return CurrentDbVersion;
+        }
+
         public async Task<string> EnsureDbMigratedAsync(string dbVersion)
         {
-            if (dbVersion == CurrentDbVersion)
             {
-                return dbVersion;
             }
 
-            if (dbVersion is null)
             {
                 await ApplyDbVersionAsync(CurrentDbVersion);
                 return CurrentDbVersion;
-            }
-
-            if (dbVersion == "1.0")
-            {
-                await Migrate_101_TaskListItems();
-                dbVersion = CurrentDbVersion;
             }
 
             return dbVersion;
