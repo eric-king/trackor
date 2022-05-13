@@ -95,19 +95,15 @@ public class DatabaseEffects
     {
         var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
         var dbContext = await _db.CreateDbContextAsync();
-        var migrator = new TrackorDbMigrator(dbContext);
-        bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
 
-        string dbVersion;
-        if (freshDbCreated)
-        {
-            dbVersion = await migrator.ApplyCurrentDbVersionAsync();
-        }
-        else 
-        {
-            var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == ApplicationSettingKeys.DbVersion);
-            dbVersion = await migrator.EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
-        }
+        //var dbCreationSql = dbContext.Database.GenerateCreateScript();
+        //Console.WriteLine("Db Creation SQL:");
+        //Console.WriteLine(dbCreationSql);
+
+        bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
+        var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == ApplicationSettingKeys.DbVersion);
+        var migrator = new TrackorDbMigrator(dbContext);
+        var dbVersion = await migrator.EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
 
         dispatcher.Dispatch(new DatabaseSetDbVersionAction(dbVersion));
         dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));

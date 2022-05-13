@@ -5,21 +5,21 @@
 
 <MudTable Items="@(CategoriesState.Value.Categories)" Hover="true" Elevation="6" Class="mb-12">
     <ColGroup>
-        <col style="width: 70%;" />
+        <col style="width: 60%;" />
         <col style="width: 15%;" />
-        <col style="width: 15%;" />
+        <col style="width: 25%;" />
     </ColGroup>
     <HeaderContent>
         <MudTh>Title</MudTh>
-        <MudTh>Active</MudTh>
+        <MudTh Style="text-align:center">Active</MudTh>
         <MudTh Style="text-align:center"><MudIcon Icon="@Icons.Filled.Construction"></MudIcon></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Title">@context.Title</MudTd>
-        <MudTd DataLabel="Active">
+        <MudTd DataLabel="Active" Style="text-align:center">
             <ActiveInactiveLabel IsActive="context.Active" />
         </MudTd>
-        <MudTd>
+        <MudTd Style="text-align:center">
             <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="() => DeleteCategory(context)" Title="Delete"></MudIconButton>
             <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditCategory(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
             <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditCategory(context)" Title="Edit"></MudIconButton>

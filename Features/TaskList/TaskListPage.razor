@@ -1,0 +1,51 @@
+﻿@page "/tasklist"
+@inherits FluxorComponent
+
+@using Trackor.Features.TaskList.Components
+
+@inject IState<TaskListState> TaskListState
+@inject IDispatcher Dispatcher
+
+<PageTitle>Trackor - Task List</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Outlined.Task" /> Task List
+</MudText>
+
+<MudDropContainer T="TaskListItem"
+                  Items="_tasks"
+                  ItemsSelector="@((taskListItem,column) => taskListItem.Status.ToString() == column)"
+                  ItemDropped="OnTaskUpdated"
+                  Class="d-flex flex-row"
+                  @ref="_dropContainer">
+    <ChildContent>
+        <TaskListForm />
+        <TaskListColumn Identifier="0" HeaderText="To Do" />
+        <TaskListColumn Identifier="1" HeaderText="In Progress" />
+        <TaskListColumn Identifier="2" HeaderText="Done" />
+    </ChildContent>
+    <ItemRenderer>
+        <TaskListItemRenderer Item="context" />
+    </ItemRenderer>
+</MudDropContainer>
+
+@code {
+
+    private TaskListItem[] _tasks => TaskListState.Value.Tasks;
+    MudDropContainer<TaskListItem> _dropContainer;
+
+    protected override void OnInitialized()
+    {
+        if (!TaskListState.Value.Tasks.Any())
+        {
+            Dispatcher.Dispatch(new TaskListLoadAction());
+        }
+        base.OnInitialized();
+    }
+
+    private void OnTaskUpdated(MudItemDropInfo<TaskListItem> info)
+    {
+        info.Item.Status = int.Parse(info.DropzoneIdentifier);
+        Dispatcher.Dispatch(new TaskListSaveTaskAction(info.Item));
+    }
+}
