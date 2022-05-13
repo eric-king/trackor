@@ -1,6 +1,8 @@
 ﻿@page "/tasklist"
 @inherits FluxorComponent
 
+@using Trackor.Features.TaskList.Components
+
 @inject IState<TaskListState> TaskListState
 @inject IDispatcher Dispatcher
 
@@ -10,55 +12,27 @@
     <MudIcon Icon="@Icons.Outlined.Task" /> Task List
 </MudText>
 
-<MudDropContainer T="TaskListItem" Items="_tasks" ItemsSelector="@((taskListItem,column) => taskListItem.Status.ToString() == column)" ItemDropped="TaskUpdated" Class="d-flex flex-row">
+<MudDropContainer T="TaskListItem"
+                  Items="_tasks"
+                  ItemsSelector="@((taskListItem,column) => taskListItem.Status.ToString() == column)"
+                  ItemDropped="OnTaskUpdated"
+                  Class="d-flex flex-row"
+                  @ref="_dropContainer">
     <ChildContent>
-        <MudPaper Elevation="0" Width="300px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Add A Task</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <CategoryPicker @ref="_categoryPicker" />
-                    <ProjectPicker @ref="_projectPicker" />
-                    <MudTextField Label="Task" @bind-Value="_narrative" />
-                     <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTask">Add</MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudPaper>
-        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
-            <MudDropZone T="TaskListItem" Identifier="0" Class="mud-height-full">
-                <MudText Typo="Typo.h6" Class="mb-3">To Do</MudText>
-            </MudDropZone>
-        </MudPaper>
-        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
-            <MudDropZone T="TaskListItem" Identifier="1" Class="mud-height-full">
-                <MudText Typo="Typo.h6" Class="mb-3">In Progress</MudText>
-            </MudDropZone>
-        </MudPaper>
-        <MudPaper Elevation="6" Width="250px" MinHeight="400px" Class="pa-4 ma-4 d-flex flex-column mud-background-gray rounded-lg">
-            <MudDropZone T="TaskListItem" Identifier="2" Class="mud-height-full">
-                <MudText Typo="Typo.h6" Class="mb-3">Done</MudText>
-            </MudDropZone>
-        </MudPaper>
+        <TaskListForm />
+        <TaskListColumn Identifier="0" HeaderText="To Do" />
+        <TaskListColumn Identifier="1" HeaderText="In Progress" />
+        <TaskListColumn Identifier="2" HeaderText="Done" />
     </ChildContent>
     <ItemRenderer>
-        <MudPaper Elevation="6" Class="pa-4 rounded-lg my-3">@context.Narrative</MudPaper>
+        <TaskListItemRenderer Item="context" />
     </ItemRenderer>
 </MudDropContainer>
 
 @code {
 
-    private CategoryPicker _categoryPicker;
-    private ProjectPicker _projectPicker;
-    private string _narrative { get; set; }
-    DateTime? _dueDate { get; set; }
-
     private TaskListItem[] _tasks => TaskListState.Value.Tasks;
+    MudDropContainer<TaskListItem> _dropContainer;
 
     protected override void OnInitialized()
     {
@@ -69,22 +43,7 @@
         base.OnInitialized();
     }
 
-    private void AddTask()
-    {
-        var newTask = new TaskListItem
-            {
-                Narrative = _narrative,
-                CategoryId = _categoryPicker.SelectedCategory?.Id,
-                ProjectId = _projectPicker.SelectedProject?.Id,
-                Status = 0,
-                Due = _dueDate.HasValue ? DateOnly.FromDateTime(_dueDate.Value) : null
-            };
-
-        _narrative = null;
-        Dispatcher.Dispatch(new TaskListSaveTaskAction(newTask));
-    }
-
-    private void TaskUpdated(MudItemDropInfo<TaskListItem> info)
+    private void OnTaskUpdated(MudItemDropInfo<TaskListItem> info)
     {
         info.Item.Status = int.Parse(info.DropzoneIdentifier);
         Dispatcher.Dispatch(new TaskListSaveTaskAction(info.Item));

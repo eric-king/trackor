@@ -89,8 +89,7 @@
 
     private async Task ResetActivityLogForm()
     {
-        // Leave Category, Project, and Date where they are
-        // unless they're inactive
+        // Leave Category, Project, and Date where they are unless they're inactive
         // to make subsequent entries easier
 
         if (_categoryPicker.SelectedCategory is not null && !_categoryPicker.SelectedCategory.Active)

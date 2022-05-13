@@ -1,0 +1,47 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Add A Task</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <CategoryPicker @ref="_categoryPicker" />
+            <ProjectPicker @ref="_projectPicker" />
+            <MudTextField Label="Task" @bind-Value="_narrative" />
+            <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
+            <MudCheckBox @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTask">Add</MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudPaper>
+
+@code {
+    private CategoryPicker _categoryPicker;
+    private ProjectPicker _projectPicker;
+    private string _narrative { get; set; }
+    private DateTime? _dueDate { get; set; }
+    private bool _highPriority { get; set; }
+
+    private void AddTask()
+    {
+        var newTask = new TaskListItem
+            {
+                Narrative = _narrative,
+                CategoryId = _categoryPicker.SelectedCategory?.Id,
+                ProjectId = _projectPicker.SelectedProject?.Id,
+                Status = 0,
+                Priority = _highPriority ? 1 : 0,
+                Due = _dueDate.HasValue ? DateOnly.FromDateTime(_dueDate.Value) : null
+            };
+
+        _narrative = null;
+        Dispatcher.Dispatch(new TaskListSaveTaskAction(newTask));
+    }
+}

@@ -1,0 +1,43 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudCard Class="my-2">
+    <MudCardContent>
+        <MudText Typo="Typo.h6">@Item.Narrative</MudText>
+        <MudText Typo="Typo.body2"><CategoryLabel CategoryId="Item.CategoryId" /></MudText>
+        <MudText Typo="Typo.body2"><ProjectLabel ProjectId="Item.ProjectId" /></MudText>
+        <MudText Typo="Typo.body2">@(Item.Due.HasValue ? $"Due: {Item.Due.ToString()}" : "" )</MudText>
+    </MudCardContent>
+    <MudCardActions Class="d-flex justify-space-between flex-grow-1 gap-3">
+        <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" Size="Size.Small" Title="Delete" />
+        <MudItem>
+            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Info" Size="Size.Small" Title="Edit" />
+            <MudToggleIconButton Toggled="_highPriority" ToggledChanged="OnHighPriorityChanged"
+                                 Icon="@Icons.Outlined.Flag" Size="Size.Small" Title="Normal Priority"
+                                 ToggledIcon="@Icons.Filled.Flag" ToggledSize="Size.Small" ToggledColor="Color.Success"
+                                 ToggledTitle="High Priority" />
+        </MudItem>
+    </MudCardActions>
+</MudCard>
+
+@code {
+
+    private bool _highPriority { get; set; }
+
+    [Parameter]
+    public TaskListItem Item { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _highPriority = Item.Priority == 1;
+        base.OnParametersSet();
+    }
+
+    private void OnHighPriorityChanged(bool highPriority)
+    {
+        Item.Priority = highPriority ? 1 : 0;
+        Dispatcher.Dispatch(new TaskListSaveTaskAction(Item));
+        _highPriority = highPriority;
+    }
+}

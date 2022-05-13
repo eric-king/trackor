@@ -38,7 +38,10 @@ public static class TaskListReducers
     {
         return state with
         {
-            Tasks = action.Tasks
+            Tasks = action.Tasks.OrderByDescending(x => x.Priority)
+               .ThenByDescending(x => x.Due)
+               .ThenBy(x => x.Narrative)
+               .ToArray()
         };
     }
 
@@ -50,7 +53,8 @@ public static class TaskListReducers
 
         var newTaskArray = taskList
                .OrderByDescending(x => x.Priority)
-               .OrderBy(x => x.Narrative)
+               .ThenByDescending(x => x.Due)
+               .ThenBy(x => x.Narrative)
                .ToArray();
 
         return state with
@@ -69,7 +73,8 @@ public static class TaskListReducers
 
         var newTaskArray = taskList
                .OrderByDescending(x => x.Priority)
-               .OrderBy(x => x.Narrative)
+               .ThenByDescending(x => x.Due)
+               .ThenBy(x => x.Narrative)
                .ToArray();
 
         return state with
@@ -87,7 +92,8 @@ public static class TaskListReducers
 
         var newTaskArray = taskList
               .OrderByDescending(x => x.Priority)
-              .OrderBy(x => x.Narrative)
+              .ThenByDescending(x => x.Due)
+              .ThenBy(x => x.Narrative)
               .ToArray();
 
         return state with
