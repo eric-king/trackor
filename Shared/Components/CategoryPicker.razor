@@ -28,11 +28,13 @@
     public void Reset()
     {
         _selectedCategory = null;
+        StateHasChanged();
     }
 
     public void SetCategory(int? categoryId)
     {
         _selectedCategory = categoryId == null ? null : CategoriesState.Value.Categories.Single(x => x.Id == categoryId);
+        StateHasChanged();
     }
 
     private async Task<IEnumerable<Category>> CategorySearch(string value)

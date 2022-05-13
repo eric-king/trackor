@@ -2,46 +2,96 @@
 
 @inject IDispatcher Dispatcher
 
-<MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
-    <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h6">Add A Task</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <CategoryPicker @ref="_categoryPicker" />
-            <ProjectPicker @ref="_projectPicker" />
-            <MudTextField Label="Task" @bind-Value="_narrative" />
-            <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
-            <MudCheckBox @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTask">Add</MudButton>
-        </MudCardActions>
-    </MudCard>
-</MudPaper>
+<MudFocusTrap DefaultFocus="DefaultFocus.None">
+    <MudForm @ref="_taskForm" @bind-IsValid="@_formIsValid">
+        <MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField @ref="_narrativeFieldRef" Label="Task" @bind-Value="_narrative" Immediate="true" OnKeyUp="SaveOnEnterKeyUp" Required="true" RequiredError="" />
+                    <CategoryPicker @ref="_categoryPicker" />
+                    <ProjectPicker @ref="_projectPicker" />
+                    <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
+                    <MudCheckBox @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveTask">Save</MudButton>
+                    @if(_taskId != 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" OnClick="ResetForm" Class="ml-3">Cancel Edit</MudButton>
+                    }
+                </MudCardActions>
+            </MudCard>
+        </MudPaper>
+    </MudForm>
+</MudFocusTrap>
 
 @code {
+    private int _taskId { get; set; }
     private CategoryPicker _categoryPicker;
     private ProjectPicker _projectPicker;
     private string _narrative { get; set; }
     private DateTime? _dueDate { get; set; }
     private bool _highPriority { get; set; }
+    private int _status { get; set; }
 
-    private void AddTask()
+    private bool _formIsValid;
+    MudForm _taskForm;
+    MudTextField<string> _narrativeFieldRef;
+
+    protected override void OnInitialized()
     {
+        SubscribeToAction<TaskListEditTaskAction>(action => EditTask(action.Task));
+        base.OnInitialized();
+    }
+
+    private void EditTask(TaskListItem task)
+    {
+        _taskId = task.Id;
+        _narrative = task.Narrative;
+        _categoryPicker.SetCategory(task.CategoryId);
+        _projectPicker.SetProject(task.ProjectId);
+        _dueDate = task.Due.HasValue ? task.Due.Value.ToDateTime(TimeOnly.MinValue) : null;
+        _highPriority = task.Priority == 1;
+        _status = task.Status;
+    }
+
+    private async Task SaveOnEnterKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && _formIsValid)
+        {
+            await SaveTask();
+        }
+    }
+
+    private async Task SaveTask()
+    {
+        if (string.IsNullOrWhiteSpace(_narrative)) return;
+
         var newTask = new TaskListItem
             {
+                Id = _taskId,
                 Narrative = _narrative,
                 CategoryId = _categoryPicker.SelectedCategory?.Id,
                 ProjectId = _projectPicker.SelectedProject?.Id,
-                Status = 0,
+                Status = _status,
                 Priority = _highPriority ? 1 : 0,
                 Due = _dueDate.HasValue ? DateOnly.FromDateTime(_dueDate.Value) : null
             };
 
-        _narrative = null;
         Dispatcher.Dispatch(new TaskListSaveTaskAction(newTask));
+        await ResetForm();
+        await _narrativeFieldRef.FocusAsync();
+    }
+
+    private async Task ResetForm()
+    {
+        await Task.Yield();
+        _taskId = 0;
+        _narrative = null;
+        _highPriority = false;
+        _dueDate = null;
+        _status = 0;
+        _categoryPicker.Reset();
+        _projectPicker.Reset();
     }
 }

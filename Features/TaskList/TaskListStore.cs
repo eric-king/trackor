@@ -8,6 +8,7 @@ namespace Trackor.Features.TaskList;
 public record TaskListLoadAction();
 public record TaskListSetAction(TaskListItem[] Tasks);
 public record TaskListAddTaskAction(TaskListItem Task);
+public record TaskListEditTaskAction(TaskListItem Task);
 public record TaskListSaveTaskAction(TaskListItem Task);
 public record TaskListUpdateTaskAction(TaskListItem Task);
 public record TaskListDeleteTaskAction(TaskListItem Task);

@@ -10,9 +10,9 @@
         <MudText Typo="Typo.body2">@(Item.Due.HasValue ? $"Due: {Item.Due.ToString()}" : "" )</MudText>
     </MudCardContent>
     <MudCardActions Class="d-flex justify-space-between flex-grow-1 gap-3">
-        <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" Size="Size.Small" Title="Delete" />
+        <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" Size="Size.Small" Title="Delete" OnClick="@(() => Dispatcher.Dispatch(new TaskListDeleteTaskAction(Item)))" />
         <MudItem>
-            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Info" Size="Size.Small" Title="Edit" />
+            <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Info" Size="Size.Small" Title="Edit" OnClick="@(() => Dispatcher.Dispatch(new TaskListEditTaskAction(Item)))" />
             <MudToggleIconButton Toggled="_highPriority" ToggledChanged="OnHighPriorityChanged"
                                  Icon="@Icons.Outlined.Flag" Size="Size.Small" Title="Normal Priority"
                                  ToggledIcon="@Icons.Filled.Flag" ToggledSize="Size.Small" ToggledColor="Color.Success"
@@ -40,4 +40,5 @@
         Dispatcher.Dispatch(new TaskListSaveTaskAction(Item));
         _highPriority = highPriority;
     }
+
 }
