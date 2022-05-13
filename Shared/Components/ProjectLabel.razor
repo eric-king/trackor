@@ -1,0 +1,11 @@
+﻿@inherits FluxorComponent
+
+@inject IState<ProjectsState> State
+
+<span>@(ProjectId == null ? "" : State.Value.Projects.SingleOrDefault(x => x.Id == ProjectId)?.Title)</span>
+
+@code {
+
+    [Parameter]
+    public int? ProjectId { get; set; }
+}

@@ -51,10 +51,10 @@ public class ThemeEffects
     public async Task OnLoadDarkMode(IDispatcher dispatcher) 
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == "IsDarkMode");
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.IsDarkMode);
         if (appSetting is null) 
         {
-            appSetting = new ApplicationSetting { Key = "IsDarkMode", Value = false.ToString() };
+            appSetting = new ApplicationSetting { Key = ApplicationSettingKeys.IsDarkMode, Value = false.ToString() };
             dbContext.ApplicationSettings.Add(appSetting);
             dbContext.SaveChanges();
         }
@@ -65,7 +65,7 @@ public class ThemeEffects
     public async Task OnToggleDarkModeAction(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == "IsDarkMode");
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.IsDarkMode);
         var isDarkMode = !bool.Parse(appSetting.Value);
         appSetting.Value = isDarkMode.ToString();
         dbContext.SaveChanges();

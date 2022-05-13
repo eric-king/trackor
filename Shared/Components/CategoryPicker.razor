@@ -1,0 +1,45 @@
+﻿@inherits FluxorComponent
+
+@inject IState<CategoriesState> CategoriesState
+@inject IDispatcher Dispatcher
+
+<MudAutocomplete T="Category"
+                 Label="Category"
+                 @bind-Value="_selectedCategory"
+                 SearchFunc="@CategorySearch"
+                 ToStringFunc="@( c => c == null ? null : $"{c.Title}")"
+                 ResetValueOnEmptyText="true" />
+
+@code {
+
+    public Category SelectedCategory => _selectedCategory;
+
+    private Category _selectedCategory { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!CategoriesState.Value.Categories.Any())
+        {
+            Dispatcher.Dispatch(new CategoriesLoadAction());
+        }
+        base.OnInitialized();
+    }
+
+    public void Reset()
+    {
+        _selectedCategory = null;
+        StateHasChanged();
+    }
+
+    public void SetCategory(int? categoryId)
+    {
+        _selectedCategory = categoryId == null ? null : CategoriesState.Value.Categories.Single(x => x.Id == categoryId);
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<Category>> CategorySearch(string value)
+    {
+        await Task.Yield();
+        return CategoriesState.Value.Categories.Where(x => x.Active);
+    }
+}

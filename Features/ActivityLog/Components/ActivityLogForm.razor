@@ -1,8 +1,6 @@
 ﻿@inherits FluxorComponent
 
 @inject IState<ActivityLogState> ActivityLogState
-@inject IState<CategoriesState> CategoriesState
-@inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
 
 <MudPaper Class="pa-3 mb-3" Elevation="6">
@@ -10,10 +8,10 @@
         <MudForm @ref="_activityLogForm" @bind-IsValid="@_formIsValid">
             <MudGrid>
                 <MudItem xs="4">
-                    <MudAutocomplete T="Category" Label="Category" @bind-Value="_selectedCategory" SearchFunc="@CategorySearch" ToStringFunc="@( c => c == null ? null : $"{c.Title}")" ResetValueOnEmptyText="true" />
+                    <CategoryPicker @ref="_categoryPicker" />
                 </MudItem>
                 <MudItem xs="4">
-                    <MudAutocomplete T="Project" Label="Project" @bind-Value="_selectedProject" SearchFunc="@ProjectSearch" ToStringFunc="@( p => p == null ? null : $"{p.Title}")" ResetValueOnEmptyText="true" Class="mx-6" />
+                    <ProjectPicker @ref="_projectPicker" />
                 </MudItem>
                 <MudItem xs="4">
                     <MudDatePicker Label="Activity Date" @bind-Date="_activityDate" />
@@ -47,8 +45,8 @@
 @code {
 
     MudForm _activityLogForm;
-    Category _selectedCategory;
-    Project _selectedProject;
+    CategoryPicker _categoryPicker;
+    ProjectPicker _projectPicker;
     int _selectedId = 0;
     string _activityTitle = "";
     int _activityHours = 0;
@@ -60,18 +58,8 @@
 
     protected override void OnInitialized()
     {
-        if (!CategoriesState.Value.Categories.Any())
-        {
-            Dispatcher.Dispatch(new CategoriesLoadAction());
-        }
-
-        if (!ProjectsState.Value.Projects.Any())
-        {
-            Dispatcher.Dispatch(new ProjectsLoadAction());
-        }
-
+        SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);  
         base.OnInitialized();
-        SubscribeToAction<ActivityLogEditItemAction>(EditActivityLogItem);
     }
 
     private async Task OnKeyUp(KeyboardEventArgs args)
@@ -88,8 +76,8 @@
         var newActivity = new ActivityLogItem
             {
                 Id = _selectedId,
-                CategoryId = _selectedCategory?.Id,
-                ProjectId = _selectedProject?.Id,
+                CategoryId = _categoryPicker.SelectedCategory?.Id,
+                ProjectId = _projectPicker.SelectedProject?.Id,
                 Title = _activityTitle,
                 Date = _activityDate.HasValue ? DateOnly.FromDateTime(_activityDate.Value) : DateOnly.FromDateTime(DateTime.Now),
                 Duration = timespan
@@ -101,18 +89,17 @@
 
     private async Task ResetActivityLogForm()
     {
-        // Leave Category, Project, and Date where they are
-        // unless they're inactive
+        // Leave Category, Project, and Date where they are unless they're inactive
         // to make subsequent entries easier
 
-        if (_selectedCategory is not null && !_selectedCategory.Active)
+        if (_categoryPicker.SelectedCategory is not null && !_categoryPicker.SelectedCategory.Active)
         {
-            _selectedCategory = null;
+            _categoryPicker.Reset();
         }
 
-        if (_selectedProject is not null && !_selectedProject.Active)
+        if (_projectPicker.SelectedProject is not null && !_projectPicker.SelectedProject.Active)
         {
-            _selectedProject = null;
+            _projectPicker.Reset();
         }
 
         _selectedId = 0;
@@ -134,21 +121,10 @@
         _activityHours = activityLogItem.Duration.Hours;
         _activityMinutes = activityLogItem.Duration.Minutes;
         _activityDate = activityLogItem.Date.ToDateTime(TimeOnly.MinValue);
-        _selectedCategory = activityLogItem.CategoryId == null ? null : CategoriesState.Value.Categories.Single(x => x.Id == activityLogItem.CategoryId);
-        _selectedProject = activityLogItem.ProjectId == null ? null : ProjectsState.Value.Projects.Single(x => x.Id == activityLogItem.ProjectId);
+        _categoryPicker.SetCategory(activityLogItem.CategoryId);
+        _projectPicker.SetProject(activityLogItem.ProjectId);
         _activityLogForm.ResetValidation();
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<Category>> CategorySearch(string value)
-    {
-        await Task.Yield();
-        return CategoriesState.Value.Categories.Where(x => x.Active);
-    }
-
-    private async Task<IEnumerable<Project>> ProjectSearch(string value)
-    {
-        await Task.Yield();
-        return ProjectsState.Value.Projects.Where(x => x.Active);
-    }
 }

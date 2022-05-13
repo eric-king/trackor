@@ -1,0 +1,20 @@
+﻿@inherits FluxorComponent
+
+@inject IState<TaskListState> TaskListState
+
+<MudPaper Elevation="6" Width="250px" MinHeight="400px"
+          Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
+    <MudDropZone T="TaskListItem" Identifier="@Identifier" Class="mud-height-full">
+        <MudText Typo="Typo.h6" Class="mb-3">@HeaderText</MudText>
+    </MudDropZone>
+</MudPaper>
+
+@code {
+
+    [Parameter]
+    public string Identifier { get; set; }
+
+    [Parameter]
+    public string HeaderText { get; set; }
+
+}

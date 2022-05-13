@@ -1,8 +1,6 @@
 ﻿@inherits FluxorComponent
 
 @inject IState<ActivityLogState> ActivityLogState
-@inject IState<CategoriesState> CategoriesState
-@inject IState<ProjectsState> ProjectsState
 @inject IDispatcher Dispatcher
 
 <MudPaper Class="mb-10" Elevation="6">
@@ -12,8 +10,8 @@
             <col style="width: 15%;" />
             <col style="width: 15%;" />
             <col style="width: 10%;" />
-            <col />
-            <col style="width: 15%;" />
+            <col style="width: 30%;" />
+            <col style="width: 20%;" />
         </ColGroup>
 
         <HeaderContent>
@@ -26,11 +24,11 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Date">@context.Date</MudTd>
-            <MudTd DataLabel="Category">@(context.CategoryId == null ? "" : CategoriesState.Value.Categories.Single(x => x.Id == context.CategoryId).Title)</MudTd>
-            <MudTd DataLabel="Project">@(context.ProjectId == null ? "" : ProjectsState.Value.Projects.Single(x => x.Id == context.ProjectId).Title)</MudTd>
+            <MudTd DataLabel="Category"><CategoryLabel CategoryId="context.CategoryId" /></MudTd>
+            <MudTd DataLabel="Project"><ProjectLabel ProjectId="context.ProjectId" /></MudTd>
             <MudTd DataLabel="Duration">@context.Duration.ToString(@"hh\:mm")</MudTd>
             <MudTd DataLabel="Activity">@context.Title</MudTd>
-            <MudTd>
+            <MudTd Style="text-align:center">
                 <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="() => DeleteActivityLogItem(context)" Title="Delete"></MudIconButton>
                 <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditActivityLogItem(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
                 <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditActivityLogItem(context)" Title="Edit"></MudIconButton>

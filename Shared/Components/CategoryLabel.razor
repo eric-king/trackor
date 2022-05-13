@@ -1,0 +1,11 @@
+﻿@inherits FluxorComponent
+
+@inject IState<CategoriesState> State
+
+<span>@(CategoryId == null ? "" : State.Value.Categories.SingleOrDefault(x => x.Id == CategoryId)?.Title)</span>
+
+@code {
+
+    [Parameter]
+    public int? CategoryId { get; set; }
+}
