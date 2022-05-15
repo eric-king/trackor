@@ -7,6 +7,8 @@ namespace Trackor.Features.TaskList;
 
 public record TaskListLoadAction();
 public record TaskListSetAction(TaskListItem[] Tasks);
+public record TaskListSetUseArrowsAction(bool UseArrows);
+public record TaskListSaveUseArrowsAction(bool UseArrows);
 public record TaskListAddTaskAction(TaskListItem Task);
 public record TaskListEditTaskAction(TaskListItem Task);
 public record TaskListSaveTaskAction(TaskListItem Task);
@@ -17,6 +19,7 @@ public record TaskListRemoveTaskAction(TaskListItem Task);
 public record TaskListState
 {
     public TaskListItem[] Tasks { get; init; }
+    public bool UseArrows { get; init; }
 }
 
 public class TaskListSFeature : Feature<TaskListState>
@@ -27,7 +30,8 @@ public class TaskListSFeature : Feature<TaskListState>
     {
         return new TaskListState
         {
-            Tasks = Array.Empty<TaskListItem>()
+            Tasks = Array.Empty<TaskListItem>(),
+            UseArrows = false
         };
     }
 }
@@ -43,6 +47,15 @@ public static class TaskListReducers
                .ThenByDescending(x => x.Due)
                .ThenBy(x => x.Narrative)
                .ToArray()
+        };
+    }
+
+    [ReducerMethod]
+    public static TaskListState OnSetUseArrows(TaskListState state, TaskListSetUseArrowsAction action)
+    {
+        return state with
+        {
+            UseArrows = action.UseArrows
         };
     }
 
@@ -117,8 +130,28 @@ public class TaskListEffects
     public async Task OnLoadTasks(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
+
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.TaskListUseArrows);
+        if (appSetting is null)
+        {
+            appSetting = new ApplicationSetting { Key = ApplicationSettingKeys.TaskListUseArrows, Value = false.ToString() };
+            dbContext.ApplicationSettings.Add(appSetting);
+            dbContext.SaveChanges();
+        }
+        dispatcher.Dispatch(new TaskListSetUseArrowsAction(bool.Parse(appSetting.Value)));
+
         var items = dbContext.TaskListItems.ToArray();
         dispatcher.Dispatch(new TaskListSetAction(items));
+    }
+
+    [EffectMethod]
+    public async Task OnSaveUseArrows(TaskListSaveUseArrowsAction action, IDispatcher dispatcher)
+    {
+        using var dbContext = await _db.CreateDbContextAsync();
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.TaskListUseArrows);
+        appSetting.Value = action.UseArrows.ToString();
+        dbContext.SaveChanges();
+        dispatcher.Dispatch(new TaskListSetUseArrowsAction(action.UseArrows));
     }
 
     [EffectMethod]

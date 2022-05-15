@@ -12,4 +12,5 @@ public class ApplicationSettingKeys
     public const string DbVersion = "DbVersion";
     public const string IsDarkMode = "IsDarkMode";
     public const string PomodoroDuration = "PomodoroDuration";
+    public const string TaskListUseArrows = "TaskListUseArrows";
 }

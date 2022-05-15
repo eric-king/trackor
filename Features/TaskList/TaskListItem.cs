@@ -1,13 +1,19 @@
-﻿namespace Trackor.Features.TaskList
+﻿namespace Trackor.Features.TaskList;
+
+public class TaskListItem
 {
-    public class TaskListItem
-    {
-        public int Id { get; set; }
-        public int? CategoryId { get; set; }
-        public int? ProjectId { get; set; }
-        public string Narrative { get; set; }
-        public int Priority { get; set; }
-        public int Status { get; set; }
-        public DateOnly? Due { get; set; }
-    }
+    public int Id { get; set; }
+    public int? CategoryId { get; set; }
+    public int? ProjectId { get; set; }
+    public string Narrative { get; set; }
+    public int Priority { get; set; }
+    public int Status { get; set; }
+    public DateOnly? Due { get; set; }
+}
+
+public class TaskListItemStatus 
+{
+    public const int ToDo = 0;
+    public const int InProgress = 1;
+    public const int Done = 2;
 }

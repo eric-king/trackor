@@ -1,28 +1,32 @@
 ﻿@inherits FluxorComponent
 
 @inject IDispatcher Dispatcher
+@inject IState<TaskListState> TaskListState
 
 <MudFocusTrap DefaultFocus="DefaultFocus.None">
-    <MudForm @ref="_taskForm" @bind-IsValid="@_formIsValid">
-        <MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
-            <MudCard>
-                <MudCardContent>
+    <MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
+        <MudCard>
+            <MudCardContent>
+                <MudForm @ref="_taskForm" @bind-IsValid="@_formIsValid">
                     <MudTextField @ref="_narrativeFieldRef" Label="Task" @bind-Value="_narrative" Immediate="true" OnKeyUp="SaveOnEnterKeyUp" Required="true" RequiredError="" />
                     <CategoryPicker @ref="_categoryPicker" />
                     <ProjectPicker @ref="_projectPicker" />
                     <MudDatePicker Label="Due Date" @bind-Date="_dueDate" />
                     <MudCheckBox @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveTask">Save</MudButton>
-                    @if(_taskId != 0)
-                    {
-                        <MudButton Variant="Variant.Outlined" OnClick="ResetForm" Class="ml-3">Cancel Edit</MudButton>
-                    }
-                </MudCardActions>
-            </MudCard>
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveTask">Save</MudButton>
+                @if (_taskId != 0)
+                {
+                    <MudButton Variant="Variant.Outlined" OnClick="ResetForm" Class="ml-3">Cancel Edit</MudButton>
+                }
+            </MudCardActions>
+        </MudCard>
+        <MudPaper Class="mt-3 d-flex justify-center">
+            <MudSwitch Checked="TaskListState.Value.UseArrows" T="bool" Label="Use Arrows to Move" Color="Color.Primary" CheckedChanged="OnUseArrowsChanged" />
         </MudPaper>
-    </MudForm>
+    </MudPaper>
 </MudFocusTrap>
 
 @code {
@@ -42,6 +46,11 @@
     {
         SubscribeToAction<TaskListEditTaskAction>(action => EditTask(action.Task));
         base.OnInitialized();
+    }
+
+    private void OnUseArrowsChanged()
+    {
+        Dispatcher.Dispatch(new TaskListSaveUseArrowsAction(!TaskListState.Value.UseArrows));
     }
 
     private void EditTask(TaskListItem task)
@@ -90,7 +99,7 @@
         _narrative = null;
         _highPriority = false;
         _dueDate = null;
-        _status = 0;
+        _status = TaskListItemStatus.ToDo;
         _categoryPicker.Reset();
         _projectPicker.Reset();
     }

@@ -20,9 +20,9 @@
                   @ref="_dropContainer">
     <ChildContent>
         <TaskListForm />
-        <TaskListColumn Identifier="0" HeaderText="To Do" />
-        <TaskListColumn Identifier="1" HeaderText="In Progress" />
-        <TaskListColumn Identifier="2" HeaderText="Done" />
+        <TaskListColumn Identifier="@(TaskListItemStatus.ToDo.ToString())" HeaderText="To Do" />
+        <TaskListColumn Identifier="@(TaskListItemStatus.InProgress.ToString())" HeaderText="In Progress" />
+        <TaskListColumn Identifier="@(TaskListItemStatus.Done.ToString())" HeaderText="Done" />
     </ChildContent>
     <ItemRenderer>
         <TaskListItemRenderer Item="context" />
