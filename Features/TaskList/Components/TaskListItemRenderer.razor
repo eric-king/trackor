@@ -1,9 +1,14 @@
 ﻿@inherits FluxorComponent
 
 @inject IDispatcher Dispatcher
+@inject IState<TaskListState> TaskListState
 
 <MudCard Class="my-2">
     <MudCardContent>
+        @if (TaskListState.Value.UseArrows)
+        {
+            <TaskListItemArrows Item="Item" />
+        }
         <MudText Typo="Typo.h6">@Item.Narrative</MudText>
         <MudText Typo="Typo.body2"><CategoryLabel CategoryId="Item.CategoryId" /></MudText>
         <MudText Typo="Typo.body2"><ProjectLabel ProjectId="Item.ProjectId" /></MudText>
