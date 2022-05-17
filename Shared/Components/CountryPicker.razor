@@ -1,0 +1,35 @@
+﻿<MudAutocomplete T="CountryCode"
+                 Label="Country"
+                 @bind-Value="_selectedCountry"
+                 SearchFunc="@CountryCodeSearch"
+                 ToStringFunc="@( c => c == null ? null : $"{c.Name}")"
+                 ResetValueOnEmptyText="true"
+                 Required="true"
+                 RequiredError="" />
+
+@code {
+
+    private CountryCode _selectedCountry { get; set; }
+
+    [Parameter]
+    public string CountryCode
+    {
+        set
+        {
+            _selectedCountry = value == null ? null : Countries.CountryCodes.Single(x => x.Code == value);
+        }
+    }
+
+    public CountryCode SelectedCountry => _selectedCountry;
+
+    private async Task<IEnumerable<CountryCode>> CountryCodeSearch(string value)
+    {
+        await Task.Yield();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return Countries.CountryCodes;
+        }
+        return Countries.CountryCodes.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+}

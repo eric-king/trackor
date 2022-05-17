@@ -113,6 +113,7 @@ namespace Trackor.Features.Pomodoro
 
     public class PomodoroEffects
     {
+        private const string APP_SETTING_POMODORO_DURATION = "PomodoroDuration";
         private readonly PomodoroTimerService _timerService;
         private readonly IState<PomodoroState> _state;
         private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
@@ -143,10 +144,10 @@ namespace Trackor.Features.Pomodoro
             if (_state.Value.Initialized) return;
 
             using var dbContext = await _db.CreateDbContextAsync();
-            var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.PomodoroDuration);
+            var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_POMODORO_DURATION);
             if (appSetting is null)
             {
-                appSetting = new ApplicationSetting { Key = ApplicationSettingKeys.PomodoroDuration, Value = 25.ToString() };
+                appSetting = new ApplicationSetting { Key = APP_SETTING_POMODORO_DURATION, Value = 25.ToString() };
                 dbContext.ApplicationSettings.Add(appSetting);
                 dbContext.SaveChanges();
             }
@@ -157,7 +158,7 @@ namespace Trackor.Features.Pomodoro
         public async Task OnSaveDuration(PomodoroSaveDurationAction action, IDispatcher dispatcher)
         {
             using var dbContext = await _db.CreateDbContextAsync();
-            var appSetting = dbContext.ApplicationSettings.Single(x => x.Key == ApplicationSettingKeys.PomodoroDuration);
+            var appSetting = dbContext.ApplicationSettings.Single(x => x.Key == APP_SETTING_POMODORO_DURATION);
             appSetting.Value = action.Duration.ToString();
             dbContext.SaveChanges();
             dispatcher.Dispatch(new PomodoroSetDurationAction(action.Duration));

@@ -119,6 +119,7 @@ public static class TaskListReducers
 
 public class TaskListEffects
 {
+    private const string APP_SETTING_USE_ARROWS = "TaskListUseArrows";
     private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
 
     public TaskListEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
@@ -131,10 +132,10 @@ public class TaskListEffects
     {
         using var dbContext = await _db.CreateDbContextAsync();
 
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.TaskListUseArrows);
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_USE_ARROWS);
         if (appSetting is null)
         {
-            appSetting = new ApplicationSetting { Key = ApplicationSettingKeys.TaskListUseArrows, Value = false.ToString() };
+            appSetting = new ApplicationSetting { Key = APP_SETTING_USE_ARROWS, Value = false.ToString() };
             dbContext.ApplicationSettings.Add(appSetting);
             dbContext.SaveChanges();
         }
@@ -148,7 +149,7 @@ public class TaskListEffects
     public async Task OnSaveUseArrows(TaskListSaveUseArrowsAction action, IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.TaskListUseArrows);
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_USE_ARROWS);
         appSetting.Value = action.UseArrows.ToString();
         dbContext.SaveChanges();
         dispatcher.Dispatch(new TaskListSetUseArrowsAction(action.UseArrows));

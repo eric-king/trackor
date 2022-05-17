@@ -1,0 +1,72 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+@inject IState<WeatherState> WeatherState
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
+        <MudForm>
+            <MudGrid>
+                <MudItem xs="4">
+                    <MudTextField T="string" Label="Postal Code" @bind-Value="_postalCode" Immediate="true" Required="true" RequiredError="" />
+                </MudItem>
+                <MudItem xs="5">
+                    <CountryPicker @ref="_countryPicker" CountryCode="@(WeatherState.Value.CountryCode)" />
+                </MudItem>
+                <MudItem xs="3">
+                    <MudSelect T="string" Label="Units" @bind-Value="_selectedUnits">
+                        @foreach (var unit in _units)
+                        {
+                            <MudSelectItem Value="unit" />
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="API Key" @bind-Value="_apiKey" Immediate="true" Required="true" RequiredError="" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="8"></MudItem>
+                <MudItem xs="4" Style="text-align:right">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWeatherConfig" Class="ml-3">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudFocusTrap>
+</MudPaper>
+
+@code {
+    private string[] _units = new string[] { "Imperial (°F)", "Metric (°C)", "Standard (°K)" };
+
+    private string _postalCode;
+    private CountryPicker _countryPicker;
+    private string _selectedUnits;
+    private string _apiKey;
+
+    protected override void OnInitialized()
+    {
+        _postalCode = WeatherState.Value.PostalCode;
+        _selectedUnits = _units.FirstOrDefault(x => x.StartsWith(WeatherState.Value.Units));
+        _apiKey = WeatherState.Value.ApiKey;
+
+        base.OnInitialized();
+    }
+
+    private void SaveWeatherConfig()
+    {
+        var units = _selectedUnits?.Split(" ")[0];
+        var country = _countryPicker.SelectedCountry?.Code;
+
+        if (string.IsNullOrEmpty(_postalCode)
+         || string.IsNullOrEmpty(country)
+         || string.IsNullOrEmpty(units)
+         || string.IsNullOrEmpty(_apiKey))
+        {
+            return;
+        }
+
+        var saveAction = new WeatherSaveConfigAction(_postalCode, country, units, _apiKey);
+        Dispatcher.Dispatch(saveAction);
+    }
+
+}

@@ -1,0 +1,38 @@
+﻿@page "/weather"
+@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+@inject IState<WeatherState> WeatherState
+
+<PageTitle>Trackor - Weather</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true" Class="d-flex justify-space-between">
+    <span><MudIcon Icon="@Icons.Outlined.Cloud" /> Weather</span>
+    <span><MudToggleIconButton @bind-Toggled="_displayConfigForm"
+        Icon="@Icons.Outlined.BuildCircle"
+        ToggledIcon="@Icons.Filled.BuildCircle"/></span>
+</MudText>
+
+@if (_displayConfigForm)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-3">
+        In order to display the current weather, please provide the following information. 
+        Visit <MudLink Href="https://openweathermap.org/full-price#current" Target="_blank" >OpenWeather</MudLink> for a free API Key.
+    </MudAlert>
+
+    <WeatherConfigForm />
+}
+
+@code {
+
+    private bool _displayConfigForm;
+
+    protected override void OnInitialized()
+    {
+        SubscribeToAction<WeatherMustConfigureAction>(action => _displayConfigForm = true);
+        SubscribeToAction<WeatherSetConfigAction>(action => _displayConfigForm = false);
+        Dispatcher.Dispatch(new WeatherLoadConfigAction());
+        base.OnInitialized();
+    }
+
+}

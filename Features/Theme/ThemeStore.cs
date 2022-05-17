@@ -40,6 +40,7 @@ public static class ThemeReducers
 
 public class ThemeEffects 
 {
+    private const string APP_SETTING_IS_DARK_MODE = "IsDarkMode";
     private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
 
     public ThemeEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
@@ -51,10 +52,10 @@ public class ThemeEffects
     public async Task OnLoadDarkMode(IDispatcher dispatcher) 
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.IsDarkMode);
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_IS_DARK_MODE);
         if (appSetting is null) 
         {
-            appSetting = new ApplicationSetting { Key = ApplicationSettingKeys.IsDarkMode, Value = false.ToString() };
+            appSetting = new ApplicationSetting { Key = APP_SETTING_IS_DARK_MODE, Value = false.ToString() };
             dbContext.ApplicationSettings.Add(appSetting);
             dbContext.SaveChanges();
         }
@@ -65,7 +66,7 @@ public class ThemeEffects
     public async Task OnToggleDarkModeAction(IDispatcher dispatcher)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.IsDarkMode);
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_IS_DARK_MODE);
         var isDarkMode = !bool.Parse(appSetting.Value);
         appSetting.Value = isDarkMode.ToString();
         dbContext.SaveChanges();

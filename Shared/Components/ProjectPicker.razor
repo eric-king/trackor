@@ -40,6 +40,14 @@
     private async Task<IEnumerable<Project>> ProjectSearch(string value)
     {
         await Task.Yield();
-        return ProjectsState.Value.Projects.Where(x => x.Active);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return ProjectsState.Value.Projects.Where(x => x.Active);
+        }
+
+        return ProjectsState.Value.Projects
+            .Where(x => x.Active)
+            .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 }

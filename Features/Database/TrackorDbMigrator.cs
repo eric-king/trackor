@@ -4,6 +4,8 @@ namespace Trackor.Features.Database
 {
     public class TrackorDbMigrator
     {
+        public const string APP_SETTING_DB_VERSION = "DbVersion";
+
         private const string CurrentDbVersion = "1.01";
         private readonly TrackorContext _dbContext;
 
@@ -14,19 +16,28 @@ namespace Trackor.Features.Database
 
         public async Task<string> ApplyCurrentDbVersionAsync()
         {
-            _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = ApplicationSettingKeys.DbVersion, Value = CurrentDbVersion });
+            _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = APP_SETTING_DB_VERSION, Value = CurrentDbVersion });
             await _dbContext.SaveChangesAsync();
             return CurrentDbVersion;
         }
 
         public async Task<string> EnsureDbMigratedAsync(string dbVersion)
         {
+            if (dbVersion == CurrentDbVersion)
             {
+                return dbVersion;
             }
 
+            if (dbVersion is null)
             {
                 await ApplyDbVersionAsync(CurrentDbVersion);
                 return CurrentDbVersion;
+            }
+
+            if (dbVersion == "1.0")
+            {
+                await Migrate_101_TaskListItems();
+                dbVersion = CurrentDbVersion;
             }
 
             return dbVersion;
@@ -34,14 +45,14 @@ namespace Trackor.Features.Database
 
         private async Task ApplyDbVersionAsync(string dbVersion)
         {
-            var appSettingDbVersion = _dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == ApplicationSettingKeys.DbVersion);
+            var appSettingDbVersion = _dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_DB_VERSION);
             if (appSettingDbVersion is not null)
             {
                 appSettingDbVersion.Value = dbVersion;
             }
             else
             {
-                _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = ApplicationSettingKeys.DbVersion, Value = dbVersion });
+                _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = APP_SETTING_DB_VERSION, Value = dbVersion });
             }
             await _dbContext.SaveChangesAsync();
         }
