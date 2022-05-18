@@ -15,7 +15,7 @@
     {
         set
         {
-            _selectedCountry = value == null ? Countries.CountryCodes.First() : Countries.CountryCodes.Single(x => x.Code == value);
+            _selectedCountry = string.IsNullOrEmpty(value) ? Countries.CountryCodes.First() : Countries.CountryCodes.Single(x => x.Code == value);
         }
     }
 
