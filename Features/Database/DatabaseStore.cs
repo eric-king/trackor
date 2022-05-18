@@ -101,7 +101,7 @@ public class DatabaseEffects
         //Console.WriteLine(dbCreationSql);
 
         bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
-        var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == ApplicationSettingKeys.DbVersion);
+        var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == TrackorDbMigrator.APP_SETTING_DB_VERSION);
         var migrator = new TrackorDbMigrator(dbContext);
         var dbVersion = await migrator.EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
 

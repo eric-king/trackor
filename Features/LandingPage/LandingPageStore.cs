@@ -80,6 +80,20 @@ public class LandingPageFeature : Feature<LandingPageState>
                 },
                 new LandingPageItem
                 {
+                    HeaderText = "Weather",
+                    BodyText = "Get current weather conditions for your location",
+                    ImageUrl = "images/sky_clouds.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Weather",
+                            Url = "/weather"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
                     HeaderText = "Database",
                     BodyText = "Backup or Restore the Trackor database",
                     ImageUrl = "images/database.jpg",

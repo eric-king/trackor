@@ -40,6 +40,14 @@
     private async Task<IEnumerable<Category>> CategorySearch(string value)
     {
         await Task.Yield();
-        return CategoriesState.Value.Categories.Where(x => x.Active);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return CategoriesState.Value.Categories.Where(x => x.Active);
+        }
+
+        return CategoriesState.Value.Categories
+            .Where(x => x.Active)
+            .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 }

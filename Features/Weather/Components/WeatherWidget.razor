@@ -1,0 +1,19 @@
+﻿@inherits FluxorComponent
+
+@inject IState<WeatherState> WeatherState
+@inject NavigationManager NavigationManager
+
+@if (_conditions is not null)
+{
+    <MudChip Label="true" Color="Color.Info" OnClick="@(() => NavigationManager.NavigateTo("/weather"))">
+        @foreach (var icon in _conditions.Icons)
+        {
+            <MudImage Src="@icon" Height="32" Width="32" Elevation="0" Class="ml-n2 mr-1" />
+        }
+        @WeatherState.Value.WeatherConditions.Temperature - @WeatherState.Value.WeatherConditions.Description
+    </MudChip>
+}
+
+@code {
+    private WeatherConditions _conditions => @WeatherState.Value.WeatherConditions;
+}

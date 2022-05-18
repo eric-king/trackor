@@ -1,0 +1,45 @@
+﻿@inherits FluxorComponent
+
+@inject IState<WeatherState> WeatherState
+@inject IDispatcher Dispatcher
+
+@if (_conditions is null)
+{
+    <div>Weather conditions have not yet been loaded.</div>
+    return;
+}
+
+<div class="d-flex justify-center flex-grow-1">
+    <MudCard Class="flex-1" Elevation="6" Style="max-width: 500px;">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">@_conditions.Location</MudText>
+                <MudText Typo="Typo.body2">@_conditions.Time</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Filled.Autorenew" OnClick="Refresh" Title="Refresh" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <div class="d-flex align-center">
+                @foreach (var icon in _conditions.Icons)
+                {
+                    <MudImage Src="@icon" Alt="Weather Condition Icon" Elevation="0" Class="rounded-lg" />
+                }
+                <MudText Typo="Typo.h5">@_conditions.Temperature - @_conditions.Description</MudText>
+            </div>
+            <MudDivider Class="mb-3" />
+            <MudText Typo="Typo.h6">Feels Like: @_conditions.FeelsLike</MudText>
+        </MudCardContent>
+    </MudCard>
+</div>
+
+@code {
+
+    private WeatherConditions _conditions => WeatherState.Value.WeatherConditions;
+
+    private void Refresh()
+    {
+        Dispatcher.Dispatch(new WeatherGetCurrentConditionsAction());
+    }
+}
