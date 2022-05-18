@@ -3,6 +3,7 @@
 
 @using Trackor.Features.Database
 @using Trackor.Features.Pomodoro.Components
+@using Trackor.Features.Weather.Components
 
 @inject IState<ThemeState> ThemeState
 @inject NavigationManager NavigationManager
@@ -35,6 +36,7 @@ else
             <MudSpacer />
             <PomodoroWidget />
             <MudSpacer />
+            <WeatherWidget />
             <MudIconButton Icon="@themeIcon" Color="Color.Inherit" OnClick="ToggleThemeMode" Class="mr-3" />
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/eric-king/trackor/" Target="_blank" />
         </MudAppBar>

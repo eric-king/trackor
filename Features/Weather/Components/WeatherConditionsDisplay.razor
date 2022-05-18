@@ -9,7 +9,7 @@
     return;
 }
 
-<MudPaper class="d-flex justify-center flex-grow-1" Elevation="0">
+<div class="d-flex justify-center flex-grow-1">
     <MudCard Class="flex-1" Elevation="6" Style="max-width: 500px;">
         <MudCardHeader>
             <CardHeaderContent>
@@ -28,10 +28,11 @@
                 }
                 <MudText Typo="Typo.h5">@_conditions.Temperature - @_conditions.Description</MudText>
             </div>
+            <MudDivider Class="mb-3" />
             <MudText Typo="Typo.h6">Feels Like: @_conditions.FeelsLike</MudText>
         </MudCardContent>
     </MudCard>
-</MudPaper>
+</div>
 
 @code {
 
