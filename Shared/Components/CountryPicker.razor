@@ -8,15 +8,14 @@
                  RequiredError="" />
 
 @code {
-
-    private CountryCode _selectedCountry { get; set; }
+    private CountryCode _selectedCountry { get; set; } = Countries.CountryCodes.First();
 
     [Parameter]
     public string CountryCode
     {
         set
         {
-            _selectedCountry = value == null ? null : Countries.CountryCodes.Single(x => x.Code == value);
+            _selectedCountry = value == null ? Countries.CountryCodes.First() : Countries.CountryCodes.Single(x => x.Code == value);
         }
     }
 
