@@ -85,6 +85,7 @@
 
     protected override void OnInitialized()
     {
+        durationSliderValue = PomodoroState.Value.DefaultDurationInMinutes;
         SubscribeToAction<PomodoroSetDurationAction>(action => durationSliderValue = action.Duration);
         Dispatcher.Dispatch(new PomodoroLoadDurationAction());
         Dispatcher.Dispatch(new PomodoroInitializeTimerAction());
