@@ -1,5 +1,6 @@
 ﻿using Fluxor;
 using SqliteWasmHelper;
+using System.Net.Http.Json;
 using Trackor.Features.Database;
 
 namespace Trackor.Features.Weather;
@@ -9,6 +10,7 @@ public record WeatherSaveConfigAction(string PostalCode, string CountryCode, str
 public record WeatherSetConfigAction(string PostalCode, string CountryCode, string Units, string ApiKey);
 public record WeatherSetConditionsAction(WeatherConditions WeatherConditions);
 public record WeatherMustConfigureAction();
+public record WeatherGetCurrentConditionsAction();
 
 public record WeatherState
 {
@@ -71,15 +73,21 @@ public class WeatherEffects
     private const string APP_SETTING_API_KEY = "WeatherApiKey";
 
     private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly HttpClient _httpClient;
+    private readonly IState<WeatherState> _weatherState;
 
-    public WeatherEffects(ISqliteWasmDbContextFactory<TrackorContext> db)
+    public WeatherEffects(ISqliteWasmDbContextFactory<TrackorContext> db, HttpClient httpClient, IState<WeatherState> weatherState)
     {
         _db = db;
+        _httpClient = httpClient;
+        _weatherState = weatherState;
     }
 
     [EffectMethod(typeof(WeatherLoadConfigAction))]
     public async Task OnLoadConfig(IDispatcher dispatcher)
     {
+        if (_weatherState.Value.IsWeatherConfigLoaded) { return; }
+
         using var dbContext = await _db.CreateDbContextAsync();
 
         var weatherConfigRecords = dbContext.ApplicationSettings.Where(x => x.Key.StartsWith("Weather")).ToList();
@@ -137,4 +145,21 @@ public class WeatherEffects
         dbContext.SaveChanges();
         dispatcher.Dispatch(new WeatherSetConfigAction(postalCode.Value, countryCode.Value, units.Value, apiKey.Value));
     }
+
+    [EffectMethod(typeof(WeatherGetCurrentConditionsAction))]
+    public async Task OnGetCurrentConditions(IDispatcher dispatcher) 
+    {
+        var zip = _weatherState.Value.PostalCode;
+        var countryCode = _weatherState.Value.CountryCode;
+        var apiKey = _weatherState.Value.ApiKey;
+        var units = _weatherState.Value.Units;
+
+        var apiUrl = $"https://api.openweathermap.org/data/2.5/weather?zip={zip},{countryCode}&appid={apiKey}&units={units}";
+        var response = await _httpClient.GetAsync(apiUrl);
+        
+        // Todo: Display error message on unsuccessful response
+
+        var openWeatherMapConditions = await response.Content.ReadFromJsonAsync<OpenWeatherMapConditions>();
+        dispatcher.Dispatch(new WeatherSetConditionsAction(openWeatherMapConditions.ToWeatherConditions(_weatherState.Value.Units)));
+    } 
 }
