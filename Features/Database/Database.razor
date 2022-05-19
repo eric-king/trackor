@@ -11,20 +11,54 @@
     <MudIcon Icon="@Icons.Material.Filled.Storage" /> Database
 </MudText>
 <MudText Typo="Typo.h6" GutterBottom="true">
-     v.@DatabaseState.Value.DbVersion
+    v.@DatabaseState.Value.DbVersion
 </MudText>
 <InputFile id="dbInputFile" OnChange="UploadFile" hidden accept=".sqlite3" />
-<MudButtonGroup Color="Color.Info" Variant="Variant.Filled" OverrideStyles="false">
-    @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
-    {
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
-    }
-    @if (DatabaseState.Value.DbCacheModule != null)
-    {
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Filled.CloudUpload">Restore from Backup</MudButton>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDatabase">Delete Database</MudButton>
-    }
-</MudButtonGroup>
+
+<MudAlert Severity="Severity.Error" Class="mb-6" Elevation="6">
+    This application's data is saved in a SQLite database file in the application (browser) cache. 
+    If the cache is cleared for any reason, all saved data will be lost. It is recommended to
+    periodically download the database file if you would like to store a backup.
+</MudAlert>
+
+<MudGrid>
+    <MudItem xs="4">
+        <MudCard Elevation="6">
+            <MudCardContent Style="min-height: 130px;">
+                <MudText Typo="Typo.h5">Download the database</MudText>
+                <MudText Typo="Typo.body2">Save the database to the local file system.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
+                }
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="4">
+        <MudCard Elevation="6">
+            <MudCardContent Style="min-height: 130px;">
+                <MudText Typo="Typo.h5">Restore a database</MudText>
+                <MudText Typo="Typo.body2">Upload a previously saved Trackor database file into the application cache.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Filled.CloudUpload">Restore from Backup</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="4">
+        <MudCard Elevation="6">
+            <MudCardContent Style="min-height: 130px;">
+                <MudText Typo="Typo.h5">Delete the database</MudText>
+                <MudText Typo="Typo.body2">Delete the database that currently exists in the application cache and replace it with an empty database file.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDatabase">Delete Database</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
 
 @code {
     string dbFileName;
