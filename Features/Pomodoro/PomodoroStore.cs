@@ -2,6 +2,7 @@
 using SqliteWasmHelper;
 using System.Timers;
 using Trackor.Features.Database;
+using Trackor.Features.Notifications;
 
 namespace Trackor.Features.Pomodoro
 {
@@ -189,6 +190,7 @@ namespace Trackor.Features.Pomodoro
             {
                 _timerService.Timer.Stop();
                 dispatcher.Dispatch(new PomodoroSetFinishedAction());
+                dispatcher.Dispatch(new SnackbarShowSuccessAction("Pomodoro Finished. Time for a break!"));
             }
         }
 

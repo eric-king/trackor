@@ -58,6 +58,8 @@
                 .ForEach(item => stringBuilder.AppendLine(item.ToClipboardString(CategoriesState.Value.Categories, ProjectsState.Value.Projects)));
 
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", stringBuilder.ToString());
+
+            Dispatcher.Dispatch(new SnackbarShowInfoAction("Activities copied to clipboard"));
         }
     }
 }
