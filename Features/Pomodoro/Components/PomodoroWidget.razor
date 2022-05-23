@@ -7,7 +7,7 @@
 @if (PomodoroState.Value.Running || PomodoroState.Value.Finished)
 {
     <MudChip Icon="@Icons.Outlined.Timer" Label="true" Color="chipColor" OnClick="@(() => NavigationManager.NavigateTo("/pomodoro"))">
-        Pomodoro @PomodoroState.Value.TimeSpan.ToString(@"mm\:ss")
+        Pomodoro @PomodoroState.Value.Remaining.ToString(@"mm\:ss")
     </MudChip>
 }
 <audio id="sound-ding" src="sounds/ding.mp3" />
