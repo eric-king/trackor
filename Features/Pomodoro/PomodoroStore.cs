@@ -23,8 +23,10 @@ namespace Trackor.Features.Pomodoro
         public bool Initialized { get; init; }
         public bool Running { get; init; }
         public bool Finished { get; init; }
-        public TimeSpan TimeSpan { get; init; }
+        public DateTime? StartTime { get; init; }
+        public TimeSpan Remaining { get; init; }
         public TimeSpan Elapsed { get; init; }
+        public TimeSpan Banked { get; init; }
         public int DefaultDurationInMinutes { get; init; }
     }
 
@@ -40,8 +42,10 @@ namespace Trackor.Features.Pomodoro
                 Initialized = false,
                 Running = false,
                 Finished = false,
-                TimeSpan = TimeSpan.FromMinutes(defaultduration),
+                StartTime = null,
+                Remaining = TimeSpan.FromMinutes(defaultduration),
                 Elapsed = TimeSpan.Zero,
+                Banked = TimeSpan.Zero,
                 DefaultDurationInMinutes = defaultduration
             };
         }
@@ -55,7 +59,7 @@ namespace Trackor.Features.Pomodoro
             return state with
             {
                 DefaultDurationInMinutes = action.Duration,
-                TimeSpan = TimeSpan.FromMinutes(action.Duration)
+                Remaining = TimeSpan.FromMinutes(action.Duration)
             };
         }
 
@@ -71,12 +75,21 @@ namespace Trackor.Features.Pomodoro
         [ReducerMethod(typeof(PomodoroTickAction))]
         public static PomodoroState OnPomodoroTick(PomodoroState state)
         {
-            var newTimeSpan = state.TimeSpan.Subtract(TimeSpan.FromSeconds(1));
-            var newElapsed = state.Elapsed.Add(TimeSpan.FromSeconds(1));
+            var newElapsed = DateTime.Now - state.StartTime.GetValueOrDefault() + state.Banked;
+            var newRemaining = TimeSpan.FromMinutes(state.DefaultDurationInMinutes) - newElapsed + TimeSpan.FromSeconds(1);
             return state with
             {
-                TimeSpan = newTimeSpan,
+                Remaining = newRemaining,
                 Elapsed = newElapsed
+            };
+        }
+
+        [ReducerMethod(typeof(PomodoroStopTimerAction))]
+        public static PomodoroState OnStopTimer(PomodoroState state) 
+        {
+            return state with
+            {
+                Banked = state.Elapsed
             };
         }
 
@@ -85,7 +98,8 @@ namespace Trackor.Features.Pomodoro
         {
             return state with
             {
-                Running = action.Running
+                Running = action.Running,
+                StartTime = DateTime.Now
             };
         }
 
@@ -104,8 +118,10 @@ namespace Trackor.Features.Pomodoro
         {
             return state with
             {
-                TimeSpan = TimeSpan.FromMinutes(state.DefaultDurationInMinutes),
+                Remaining = TimeSpan.FromMinutes(state.DefaultDurationInMinutes),
                 Elapsed = TimeSpan.Zero,
+                Banked = TimeSpan.Zero,
+                StartTime = null,
                 Running = false,
                 Finished = false
             };
@@ -186,7 +202,7 @@ namespace Trackor.Features.Pomodoro
         {
             await Task.Yield();
 
-            if (_state.Value.TimeSpan == TimeSpan.Zero)
+            if (_state.Value.Remaining < TimeSpan.FromSeconds(1))
             {
                 _timerService.Timer.Stop();
                 dispatcher.Dispatch(new PomodoroSetFinishedAction());

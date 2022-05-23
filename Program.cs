@@ -15,9 +15,15 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped(sp => new PomodoroTimerService());
-builder.Services.AddFluxor(o => o.ScanAssemblies(typeof(Program).Assembly));
+builder.Services.AddFluxor(o =>
+{
+    o.ScanAssemblies(typeof(Program).Assembly);
+#if DEBUG
+        o.UseReduxDevTools();
+#endif
+});
 builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => options.UseSqlite("Data Source=trackor.sqlite3"));
-builder.Services.AddMudServices(config => 
+builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PreventDuplicates = false;
     config.SnackbarConfiguration.NewestOnTop = false;
