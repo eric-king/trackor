@@ -3,8 +3,8 @@
 @inject IDispatcher Dispatcher
 @inject IState<TaskListState> TaskListState
 
-<MudFocusTrap DefaultFocus="DefaultFocus.None">
-    <MudPaper Elevation="0" MinWidth="300px" MinHeight="400px" Class="pa-3 ma-3 d-flex flex-column mud-background-gray rounded-lg">
+<MudPaper Elevation="6" Class="pa-3 ma-3 d-flex flex-column flex-grow-1 mud-background-gray rounded-lg" MaxWidth="400px" MinWidth="250px">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
         <MudCard>
             <MudCardContent>
                 <MudForm @ref="_taskForm" @bind-IsValid="@_formIsValid">
@@ -23,11 +23,11 @@
                 }
             </MudCardActions>
         </MudCard>
-        <MudPaper Class="mt-3 d-flex justify-center">
-            <MudSwitch Checked="TaskListState.Value.UseArrows" T="bool" Label="Use Arrows to Move" Color="Color.Primary" CheckedChanged="OnUseArrowsChanged" />
-        </MudPaper>
+    </MudFocusTrap>
+    <MudPaper Class="mt-3 d-flex justify-center">
+        <MudSwitch Checked="TaskListState.Value.UseArrows" T="bool" Label="Use Arrows to Move" Color="Color.Primary" CheckedChanged="OnUseArrowsChanged" />
     </MudPaper>
-</MudFocusTrap>
+</MudPaper>
 
 @code {
     private int _taskId { get; set; }
