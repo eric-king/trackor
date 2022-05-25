@@ -16,7 +16,7 @@
                   Items="_tasks"
                   ItemsSelector="@((taskListItem,column) => taskListItem.Status.ToString() == column)"
                   ItemDropped="OnTaskUpdated"
-                  Class="d-flex flex-row"
+                  Class="d-flex flex-row flex-grow-1"
                   @ref="_dropContainer">
     <ChildContent>
         <TaskListForm />
