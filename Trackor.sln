@@ -7,6 +7,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{4969346B-4413-4669-9F23-D96C6A2DC3C8}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\azure-static-web-apps-brave-coast-0096af31e.yml = .github\workflows\azure-static-web-apps-brave-coast-0096af31e.yml
+		LICENSE.md = LICENSE.md
 		README.md = README.md
 	EndProjectSection
 EndProject
