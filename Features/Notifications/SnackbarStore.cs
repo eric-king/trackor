@@ -3,10 +3,10 @@ using MudBlazor;
 
 namespace Trackor.Features.Notifications;
 
-public record SnackbarShowInfoAction(string Content);
-public record SnackbarShowSuccessAction(string Content);
-public record SnackbarShowWarningAction(string Content);
-public record SnackbarShowErrorAction(string Content);
+public record SnackbarShowInfoAction(string Content, Action ClickAction = null);
+public record SnackbarShowSuccessAction(string Content, Action ClickAction = null);
+public record SnackbarShowWarningAction(string Content, Action ClickAction = null);
+public record SnackbarShowErrorAction(string Content, Action ClickAction = null);
 
 public record SnackbarState { }
 
@@ -20,7 +20,7 @@ public class SnackbarFeature : Feature<SnackbarState>
     }
 }
 
-public class SnackbarEffects 
+public class SnackbarEffects
 {
     private readonly ISnackbar _snackbar;
 
@@ -33,27 +33,87 @@ public class SnackbarEffects
     public async Task ShowInfo(SnackbarShowInfoAction action, IDispatcher dispatcher)
     {
         await Task.Delay(0);
-        _snackbar.Add(action.Content, Severity.Info);
+
+        if (action.ClickAction is null)
+        {
+            _snackbar.Add(action.Content, Severity.Info);
+        }
+        else 
+        {
+            _snackbar.Add(action.Content, Severity.Info, config =>
+            {
+                config.Onclick = snackbar =>
+                {
+                    action.ClickAction();
+                    return Task.CompletedTask;
+                };
+            });
+        }
     }
 
     [EffectMethod]
     public async Task ShowSuccess(SnackbarShowSuccessAction action, IDispatcher dispatcher)
     {
         await Task.Delay(0);
-        _snackbar.Add(action.Content, Severity.Success);
+
+        if (action.ClickAction is null)
+        {
+            _snackbar.Add(action.Content, Severity.Success);
+        }
+        else
+        {
+            _snackbar.Add(action.Content, Severity.Success, config =>
+            {
+                config.Onclick = snackbar =>
+                {
+                    action.ClickAction();
+                    return Task.CompletedTask;
+                };
+            });
+        }
     }
 
     [EffectMethod]
     public async Task ShowWarning(SnackbarShowWarningAction action, IDispatcher dispatcher)
     {
         await Task.Delay(0);
-        _snackbar.Add(action.Content, Severity.Warning);
+
+        if (action.ClickAction is null)
+        {
+            _snackbar.Add(action.Content, Severity.Warning);
+        }
+        else
+        {
+            _snackbar.Add(action.Content, Severity.Warning, config =>
+            {
+                config.Onclick = snackbar =>
+                {
+                    action.ClickAction();
+                    return Task.CompletedTask;
+                };
+            });
+        }
     }
 
     [EffectMethod]
     public async Task ShowError(SnackbarShowErrorAction action, IDispatcher dispatcher)
     {
         await Task.Delay(0);
-        _snackbar.Add(action.Content, Severity.Error);
+
+        if (action.ClickAction is null)
+        {
+            _snackbar.Add(action.Content, Severity.Error);
+        }
+        else
+        {
+            _snackbar.Add(action.Content, Severity.Error, config =>
+            {
+                config.Onclick = snackbar =>
+                {
+                    action.ClickAction();
+                    return Task.CompletedTask;
+                };
+            });
+        }
     }
 }
