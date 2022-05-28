@@ -3,7 +3,7 @@
 @inject IDispatcher Dispatcher
 @inject IState<TaskListState> TaskListState
 
-<MudCard Class="my-2">
+<MudCard Outlined="true" Class=@($"my-2 {_overdueCssClass} {_dueTodayCssClass}")>
     <MudCardContent>
         @if (TaskListState.Value.UseArrows)
         {
@@ -12,11 +12,15 @@
         <MudText Typo="Typo.h6">@Item.Narrative</MudText>
         <MudText Typo="Typo.body2"><CategoryLabel CategoryId="Item.CategoryId" /></MudText>
         <MudText Typo="Typo.body2"><ProjectLabel ProjectId="Item.ProjectId" /></MudText>
-        <MudText Typo="Typo.body2">@(Item.Due.HasValue ? $"Due: {Item.Due.ToString()}" : "" )</MudText>
+        <MudText Typo="Typo.body2">@Item.DueDisplayText</MudText>
     </MudCardContent>
     <MudCardActions Class="d-flex justify-space-between flex-grow-1 gap-3">
         <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" Size="Size.Small" Title="Delete" OnClick="@(() => Dispatcher.Dispatch(new TaskListDeleteTaskAction(Item)))" />
         <MudItem>
+            @if (Item.Status == TaskListItemStatus.Done)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.EventNote" Color="Color.Success" Size="Size.Small" Title="Log Activity" OnClick="LogActivity" />
+            }
             <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Info" Size="Size.Small" Title="Edit" OnClick="@(() => Dispatcher.Dispatch(new TaskListEditTaskAction(Item)))" />
             <MudToggleIconButton Toggled="_highPriority" ToggledChanged="OnHighPriorityChanged"
                                  Icon="@Icons.Outlined.Flag" Size="Size.Small" Title="Normal Priority"
@@ -29,6 +33,8 @@
 @code {
 
     private bool _highPriority { get; set; }
+    private string _overdueCssClass { get; set; } = string.Empty;
+    private string _dueTodayCssClass { get; set; } = string.Empty;
 
     [Parameter]
     public TaskListItem Item { get; set; }
@@ -36,7 +42,24 @@
     protected override void OnParametersSet()
     {
         _highPriority = Item.Priority == 1;
+        _overdueCssClass = Item.Overdue ? "red lighten-5 mud-dark-text mud-border-error mud-elevation-3" : string.Empty;
+        _dueTodayCssClass = Item.DueToday ? "yellow lighten-5 mud-dark-text mud-border-primary mud-elevation-3" : string.Empty;
+
         base.OnParametersSet();
+    }
+
+    private void LogActivity()
+    {
+        var activityLogItem = new ActivityLogItem
+            {
+                Date = DateOnly.FromDateTime(DateTime.Now),
+                ProjectId = Item.ProjectId,
+                CategoryId = Item.CategoryId,
+                Title = $"Completed Task: {Item.Narrative}"
+            };
+
+        Dispatcher.Dispatch(new ActivityLogSaveItemAction(activityLogItem));
+        Dispatcher.Dispatch(new SnackbarShowSuccessAction($"Activity Log Item created for task \"{Item.Narrative}\""));
     }
 
     private void OnHighPriorityChanged(bool highPriority)
