@@ -42,8 +42,8 @@
     protected override void OnParametersSet()
     {
         _highPriority = Item.Priority == 1;
-        _overdueCssClass = Item.Overdue ? "red lighten-5 mud-border-error mud-elevation-3" : string.Empty;
-        _dueTodayCssClass = Item.DueToday ? "yellow lighten-5 mud-border-primary mud-elevation-3" : string.Empty;
+        _overdueCssClass = Item.Overdue ? "red lighten-5 mud-dark-text mud-border-error mud-elevation-3" : string.Empty;
+        _dueTodayCssClass = Item.DueToday ? "yellow lighten-5 mud-dark-text mud-border-primary mud-elevation-3" : string.Empty;
 
         base.OnParametersSet();
     }
