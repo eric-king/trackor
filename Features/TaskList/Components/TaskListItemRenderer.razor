@@ -17,6 +17,10 @@
     <MudCardActions Class="d-flex justify-space-between flex-grow-1 gap-3">
         <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" Size="Size.Small" Title="Delete" OnClick="@(() => Dispatcher.Dispatch(new TaskListDeleteTaskAction(Item)))" />
         <MudItem>
+            @if (Item.Status == TaskListItemStatus.Done)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.EventNote" Color="Color.Success" Size="Size.Small" Title="Log Activity" OnClick="LogActivity" />
+            }
             <MudIconButton Icon="@Icons.Filled.Edit" Color="Color.Info" Size="Size.Small" Title="Edit" OnClick="@(() => Dispatcher.Dispatch(new TaskListEditTaskAction(Item)))" />
             <MudToggleIconButton Toggled="_highPriority" ToggledChanged="OnHighPriorityChanged"
                                  Icon="@Icons.Outlined.Flag" Size="Size.Small" Title="Normal Priority"
@@ -37,6 +41,20 @@
     {
         _highPriority = Item.Priority == 1;
         base.OnParametersSet();
+    }
+
+    private void LogActivity()
+    {
+        var activityLogItem = new ActivityLogItem
+            {
+                Date = DateOnly.FromDateTime(DateTime.Now),
+                ProjectId = Item.ProjectId,
+                CategoryId = Item.CategoryId,
+                Title = $"Completed Task: {Item.Narrative}"
+            };
+
+        Dispatcher.Dispatch(new ActivityLogSaveItemAction(activityLogItem));
+        Dispatcher.Dispatch(new SnackbarShowSuccessAction($"Activity Log Item created for task \"{Item.Narrative}\""));
     }
 
     private void OnHighPriorityChanged(bool highPriority)
