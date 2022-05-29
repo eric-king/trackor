@@ -1,0 +1,106 @@
+﻿@inherits FluxorComponent
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudFocusTrap DefaultFocus="DefaultFocus.None">
+        <MudForm @ref="_snippetForm" @bind-IsValid="@_formIsValid">
+            <MudGrid>
+                <MudItem xs="2">
+                    <MudSelect T="string" Label="Language" @bind-Value="_language">
+                        <MudSelectItem Value="@("plaintext")">PlainText</MudSelectItem>
+                        <MudSelectItem Value="@("csharp")">C#</MudSelectItem>
+                        <MudSelectItem Value="@("fsharp")">F#</MudSelectItem>
+                        <MudSelectItem Value="@("javascript")">JavaScript</MudSelectItem>
+                        <MudSelectItem Value="@("json")">JSON</MudSelectItem>
+                        <MudSelectItem Value="@("powershell")">Powershell</MudSelectItem>
+                        <MudSelectItem Value="@("sql")">SQL</MudSelectItem>
+                        <MudSelectItem Value="@("typescript")">TypeScript</MudSelectItem>
+                        <MudSelectItem Value="@("vbnet")">VB.Net</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="5">
+                    <MudTextField @ref="_labelFieldRef" T="string" Label="Snippet Label" @bind-Value="_snippetLabel" Immediate="true" Required="true" RequiredError="" />
+                </MudItem>
+                <MudItem xs="5">
+                    <MudTextField T="string" title="Source Url" Label="Source URL" @bind-Value="_sourceUrl" Validation="@(new Func<string, string>(ValidateSourceUrl))" Immediate="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Outlined" Variant="Variant.Outlined" @bind-Value="@_snippetContents" Lines="10" Immediate="true" Required="true" RequiredError="" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="2" md="8"></MudItem>
+                <MudItem xs="10" md="4" Style="text-align:right">
+                    @if (_selectedId != 0)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ResetForm">Cancel Edit</MudButton>
+                    }
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_formIsValid)" OnClick="SaveSnippet" Class="ml-3">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudFocusTrap>
+</MudPaper>
+
+@code {
+
+    MudForm _snippetForm;
+    MudTextField<string> _labelFieldRef;
+    UrlAttribute _urlValidator;
+    bool _formIsValid = true;
+    int _selectedId = 0;
+
+    string _language = "plaintext";
+    string _snippetLabel = "";
+    string _sourceUrl = "";
+    string _snippetContents = "";
+
+    protected override void OnInitialized()
+    {
+        _urlValidator = new UrlAttribute();
+        _urlValidator.ErrorMessage = "Source URL must be a valid fully-qualified URL";
+        base.OnInitialized();
+    }
+
+    private async Task SaveSnippet()
+    {
+        var snippet = new CodeSnippet
+            {
+                Label = _snippetLabel,
+                SourceUrl = _sourceUrl,
+                Content = _snippetContents,
+                Language = "csharp"
+            };
+
+        await ResetForm();
+    }
+
+    private async Task ResetForm()
+    {
+        _language = "plaintext";
+        _snippetLabel = "";
+        _sourceUrl = "";
+        _snippetContents = "";
+        _formIsValid = false;
+
+        await _labelFieldRef.FocusAsync();
+    }
+
+    private string ValidateSourceUrl(string sourceUrl)
+    {
+        string errorMessage = null;
+
+        if (!string.IsNullOrEmpty(sourceUrl))
+        {
+            try
+            {
+                _urlValidator.Validate(sourceUrl, "Source URL");
+            }
+            catch (ValidationException ex)
+            {
+                errorMessage = ex.Message;
+            }
+        }
+
+        return errorMessage;
+    }
+}
