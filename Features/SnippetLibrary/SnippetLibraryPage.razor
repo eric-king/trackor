@@ -1,0 +1,57 @@
+﻿@page "/snippets"
+@inherits FluxorComponent
+
+@inject IJSRuntime JSRuntime
+
+@using Trackor.Features.SnippetLibrary.Components
+
+<PageTitle>Code Snippets</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Filled.Code" /> Code Snippets
+</MudText>
+
+@foreach (var snippet in _snippets)
+{
+    <CodeSnippetDisplay Snippet="snippet" />
+}
+
+@code {
+
+    private List<CodeSnippet> _snippets { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _snippets = new List<CodeSnippet>
+        {
+            new CodeSnippet
+            {
+                Label = "Sample C# code",
+                Language = "csharp",
+                Content = @"protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync(""hljs.highlightAll"");
+    }
+}",
+            },
+            new CodeSnippet
+            {
+                Label = "Sample JavaScript code",
+                Language = "javascript",
+                Content = @"document.addEventListener('DOMContentLoaded', (event) => {
+  document.querySelectorAll('pre code').forEach((el) => {
+    hljs.highlightElement(el);
+  });
+});"
+            }
+        };
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("hljs.highlightAll");
+    }
+}
