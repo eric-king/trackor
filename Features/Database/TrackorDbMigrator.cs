@@ -6,7 +6,7 @@ namespace Trackor.Features.Database
     {
         public const string APP_SETTING_DB_VERSION = "DbVersion";
 
-        private const string CurrentDbVersion = "1.01";
+        private const string CurrentDbVersion = "1.02";
         private readonly TrackorContext _dbContext;
 
         public TrackorDbMigrator(TrackorContext dbContext)
@@ -37,6 +37,13 @@ namespace Trackor.Features.Database
             if (dbVersion == "1.0")
             {
                 await Migrate_101_TaskListItems();
+                await Migrate_102_CodeSnippets();
+                dbVersion = CurrentDbVersion;
+            }
+
+            if (dbVersion == "1.01")
+            {
+                await Migrate_102_CodeSnippets();
                 dbVersion = CurrentDbVersion;
             }
 
@@ -71,6 +78,20 @@ namespace Trackor.Features.Database
 
             _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_Task_List_Items);
             await ApplyDbVersionAsync("1.01");
+        }
+
+        private async Task Migrate_102_CodeSnippets()
+        {
+            const string Create_Table_CODE_SNIPPETS = @"CREATE TABLE ""CodeSnippets"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_CodeSnippets"" PRIMARY KEY AUTOINCREMENT,
+                ""Label"" TEXT NULL,
+                ""Content"" TEXT NULL,
+                ""Language"" TEXT NULL,
+                ""SourceUrl"" TEXT NULL
+            );";
+
+            _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_CODE_SNIPPETS);
+            await ApplyDbVersionAsync("1.02");
         }
     }
 }
