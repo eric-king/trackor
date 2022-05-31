@@ -1,0 +1,19 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="pa-3 mb-3" Elevation="6">
+    <MudTextField DebounceInterval="500" OnDebounceIntervalElapsed="Search" @bind-Value="@_searchTerm" Label="Search" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" />
+</MudPaper>
+
+@code {
+
+    string _searchTerm = "";
+
+    private void Search(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm)) return;
+
+        Dispatcher.Dispatch(new SnippetLibrarySearchCodeSnippetsAction(searchTerm));
+    }
+}

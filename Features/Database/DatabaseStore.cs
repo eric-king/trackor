@@ -93,7 +93,7 @@ public class DatabaseEffects
     [EffectMethod(typeof(DatabaseSetUpDbAction))]
     public async Task OnSetupDb(IDispatcher dispatcher)
     {
-        var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./database.js");
+        var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./js/database.js");
         var dbContext = await _db.CreateDbContextAsync();
 
         //var dbCreationSql = dbContext.Database.GenerateCreateScript();

@@ -17,7 +17,7 @@
 
     protected override void OnInitialized()
     {
-        SubscribeToAction<PomodoroSetFinishedAction>(async action => await _jsRuntime.InvokeAsync<string>("PlaySound", "sound-ding"));
+        SubscribeToAction<PomodoroSetFinishedAction>(async action => await _jsRuntime.InvokeVoidAsync("PlaySound", "sound-ding"));
         base.OnInitialized();
     }
 }

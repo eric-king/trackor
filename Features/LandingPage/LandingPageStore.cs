@@ -47,20 +47,15 @@ public class LandingPageFeature : Feature<LandingPageState>
                 },
                 new LandingPageItem
                 {
-                    HeaderText = "Organize",
-                    BodyText = "Organize your Trackor content",
-                    ImageUrl = "images/organize.jpg",
+                    HeaderText = "Code Snippets",
+                    BodyText = "Store useful pieces of code for future reference",
+                    ImageUrl = "images/snippets.jpg",
                     Links = new ItemLink[]
                     {
                         new ItemLink
                         {
-                            Text = "Categories",
-                            Url = "/categories"
-                        },
-                        new ItemLink
-                        {
-                            Text = "Projects",
-                            Url = "/projects"
+                            Text = "Code Snippets",
+                            Url = "/snippets"
                         }
                     }
                 },
@@ -75,6 +70,25 @@ public class LandingPageFeature : Feature<LandingPageState>
                         {
                             Text = "Pomodoro",
                             Url = "/pomodoro"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
+                    HeaderText = "Organize",
+                    BodyText = "Organize your Trackor content",
+                    ImageUrl = "images/organize.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Categories",
+                            Url = "/categories"
+                        },
+                        new ItemLink
+                        {
+                            Text = "Projects",
+                            Url = "/projects"
                         }
                     }
                 },
