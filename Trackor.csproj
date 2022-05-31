@@ -13,11 +13,7 @@
 	  <None Remove="LICENSE.md" />
 	  <None Remove="README.md" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="wwwroot\database.js" />
-	</ItemGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="Fluxor" Version="5.3.0" />
 		<PackageReference Include="Fluxor.Blazor.Web" Version="5.3.0" />

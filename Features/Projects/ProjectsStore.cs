@@ -33,7 +33,7 @@ public class ProjectsFeature : Feature<ProjectsState>
     }
 }
 
-public static class CoreReducers
+public static class ProjectsReducers
 {
     [ReducerMethod]
     public static ProjectsState OnSetProducts(ProjectsState state, ProjectsSetAction action)

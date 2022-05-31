@@ -1,0 +1,24 @@
+﻿@page "/snippets"
+@inherits FluxorComponent
+
+@inject IState<SnippetLibraryState> SnippetLibraryState
+
+@using Trackor.Features.SnippetLibrary.Components
+
+<PageTitle>Code Snippets</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Filled.Code" /> Code Snippets
+</MudText>
+
+<CodeSnippetSearchBar />
+<CodeSnippetForm />
+
+@foreach (var snippet in SnippetLibraryState.Value.CodeSnippets)
+{
+    <CodeSnippetDisplay Snippet="snippet" />
+}
+
+@code {
+
+}

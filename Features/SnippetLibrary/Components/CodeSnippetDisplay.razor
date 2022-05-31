@@ -1,0 +1,56 @@
+﻿@inherits FluxorComponent
+
+@inject IJSRuntime JSRuntime
+@inject IDispatcher Dispatcher
+
+<MudPaper Class="mb-6 pa-3" Elevation="6">
+    <MudText Typo="Typo.h6" Class="d-flex justify-space-between flex-grow-1">
+        <div>
+            <MudChip Label="true" Class="mr-3" Color="Color.Default">@Snippet.Language</MudChip>
+            <span>@Snippet.Label</span>
+        </div>
+        <span>
+            <MudIconButton OnClick="Delete" Color="Color.Error" Variant="Variant.Text" Icon="@Icons.Filled.Delete" Title="Delete" Class="mx-1" />
+            <MudIconButton OnClick="Edit" Variant="Variant.Text" Icon="@Icons.Filled.Edit" Title="Edit" Class="mx-1" />
+            @if (!string.IsNullOrEmpty(Snippet.SourceUrl))
+            {
+                <MudLink Href="@(Snippet.SourceUrl)" Target="_blank" Class="mr-3" title="Source Link">
+                    <MudIcon Icon="@Icons.Filled.Link" Color="Color.Default" ViewBox="0 -6 24 24" />
+                </MudLink>
+            }
+            <MudIconButton OnClick="CopyToClipboard" Variant="Variant.Text" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />
+        </span>
+    </MudText>
+    <MudElement Class="rounded-lg">
+        <pre><code class="hljs">@markup</code></pre>
+    </MudElement>
+</MudPaper>
+
+@code {
+    MarkupString markup = new MarkupString(string.Empty);
+
+    [Parameter]
+    public CodeSnippet Snippet { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        markup = new(await JSRuntime.InvokeAsync<string>("highlightCodeSnippet", Snippet.Content, new { language = Snippet.Language, ignoreIllegals = true }));
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task CopyToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", Snippet.Content);
+        Dispatcher.Dispatch(new SnackbarShowInfoAction($"{Snippet.Label} copied to clipboard"));
+    }
+
+    private void Edit()
+    {
+        Dispatcher.Dispatch(new SnippetLibraryEditCodeSnippetAction(Snippet));
+    }
+
+    private void Delete()
+    {
+        Dispatcher.Dispatch(new SnippetLibraryDeleteCodeSnippetAction(Snippet));
+    }
+}
