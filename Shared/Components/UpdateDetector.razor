@@ -6,7 +6,7 @@
     {
         // this function is in the sw-registrator.js file
         // that file is used to register the app's service worker
-        // and provides a hook that we can use to know when 
+        // and provides a hook that we can use to know when
         // the service worker finds an update to the app
 
         await _jsRuntime.InvokeAsync<object>(
@@ -18,11 +18,7 @@
     [JSInvokable(nameof(OnUpdateAvailable))]
     public Task OnUpdateAvailable()
     {
-        Dispatcher.Dispatch(new UpdateDetectorSetUpdateAvailableAction());
-
-        var clickAction = () => Dispatcher.Dispatch(new UpdateDetectorNotificationClickedAction());
-        Dispatcher.Dispatch(new SnackbarShowInfoAction("A new version of Trackor is available! Click here to reload.", clickAction));
-
+        Dispatcher.Dispatch(new SnackbarShowInfoAction("A new version of Trackor is available! Please close the app or browser tab and re-start."));
         return Task.CompletedTask;
     }
 }
