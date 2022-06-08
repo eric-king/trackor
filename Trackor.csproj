@@ -8,6 +8,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="screenshots\**" />
+	  <Content Remove="screenshots\**" />
+	  <EmbeddedResource Remove="screenshots\**" />
+	  <None Remove="screenshots\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove=".gitattributes" />
 	  <None Remove=".gitignore" />
 	  <None Remove="LICENSE.md" />

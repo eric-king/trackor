@@ -22,3 +22,23 @@ locally in the browser. The project is deployed to: [https://app.trackor.dev](ht
 Trackor is not a product. I don't have the time or resources to maintain
 a full-blown project with updates and support indefinitely. Feel free to
 use the code here as inspiration for your own project if you'd like.
+
+#### Screenshots
+
+##### Landing Page
+<img src="screenshots/landing_page.png" alt="Landing Page" width="600">
+
+##### Activity Log
+<img src="screenshots/activity_log.png" alt="Activity Log" width="600">
+
+##### Task List
+<img src="screenshots/task_list.png" alt="Task List" width="600">
+
+##### Code Snippets
+<img src="screenshots/code_snippets.png" alt="Code Snippets" width="600">
+
+##### Pomodoro Timer
+<img src="screenshots/pomodoro.png" alt="Pomodoro Timer" width="600">
+
+##### Database Download / Restore
+<img src="screenshots/database.png" alt="Database Download / Restore" width="600">
