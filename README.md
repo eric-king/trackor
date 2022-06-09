@@ -40,5 +40,8 @@ use the code here as inspiration for your own project if you'd like.
 ##### Pomodoro Timer
 <img src="screenshots/pomodoro.png" alt="Pomodoro Timer" width="600">
 
+##### Weather Conditions
+<img src="screenshots/weather.png" alt="Weather Conditions" width="600">
+
 ##### Database Download / Restore
 <img src="screenshots/database.png" alt="Database Download / Restore" width="600">
