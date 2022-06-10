@@ -1,0 +1,25 @@
+﻿
+.splash-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #594ae2;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+}
+
+.splash-container-initial {
+    margin-top: -110px;
+}
+
+.splash-container {
+    margin-top: -100px;
+}
+
+.splash-message {
+    margin-top: -115px;
+    text-align: center;
+    font-size: x-large;
+    font-family: monospace;
+}
