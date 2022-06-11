@@ -1,6 +1,5 @@
 ﻿using Fluxor;
-using SqliteWasmHelper;
-using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
 
 namespace Trackor.Features.Theme;
 
@@ -41,36 +40,24 @@ public static class ThemeReducers
 public class ThemeEffects 
 {
     private const string APP_SETTING_IS_DARK_MODE = "IsDarkMode";
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly ApplicationSettingRepository _appSettingRepo;
 
-    public ThemeEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
+    public ThemeEffects(ApplicationSettingRepository appSettingRepo)
     {
-        _db = dbFactory;
+        _appSettingRepo = appSettingRepo;
     }
 
     [EffectMethod(typeof(ThemeLoadDarkModeAction))]
     public async Task OnLoadDarkMode(IDispatcher dispatcher) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_IS_DARK_MODE);
-        if (appSetting is null) 
-        {
-            appSetting = new ApplicationSetting { Key = APP_SETTING_IS_DARK_MODE, Value = false.ToString() };
-            dbContext.ApplicationSettings.Add(appSetting);
-            dbContext.SaveChanges();
-        }
+        var appSetting = await _appSettingRepo.GetOrAdd(APP_SETTING_IS_DARK_MODE, "false");
         dispatcher.Dispatch(new ThemeSetDarkModeAction(bool.Parse(appSetting.Value)));
     }
 
     [EffectMethod(typeof(ThemeToggleDarkModeAction))]
     public async Task OnToggleDarkModeAction(IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_IS_DARK_MODE);
-        var isDarkMode = !bool.Parse(appSetting.Value);
-        appSetting.Value = isDarkMode.ToString();
-        dbContext.SaveChanges();
-        dispatcher.Dispatch(new ThemeSetDarkModeAction(isDarkMode));
+        var appSetting = await _appSettingRepo.Toggle(APP_SETTING_IS_DARK_MODE);
+        dispatcher.Dispatch(new ThemeSetDarkModeAction(bool.Parse(appSetting.Value)));
     }
-
 }

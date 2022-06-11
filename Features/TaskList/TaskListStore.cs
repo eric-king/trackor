@@ -1,7 +1,5 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
-using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
 
 namespace Trackor.Features.TaskList;
 
@@ -120,68 +118,52 @@ public static class TaskListReducers
 public class TaskListEffects
 {
     private const string APP_SETTING_USE_ARROWS = "TaskListUseArrows";
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly TaskListRepository _taskListRepo;
+    private readonly ApplicationSettingRepository _appSettingRepo;
 
-    public TaskListEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
+    public TaskListEffects(TaskListRepository taskListRepo, ApplicationSettingRepository appSettingRepo)
     {
-        _db = dbFactory;
+        _taskListRepo = taskListRepo;
+        _appSettingRepo = appSettingRepo;
     }
 
     [EffectMethod(typeof(TaskListLoadAction))]
     public async Task OnLoadTasks(IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_USE_ARROWS);
-        if (appSetting is null)
-        {
-            appSetting = new ApplicationSetting { Key = APP_SETTING_USE_ARROWS, Value = false.ToString() };
-            dbContext.ApplicationSettings.Add(appSetting);
-            dbContext.SaveChanges();
-        }
+        var appSetting = await _appSettingRepo.GetOrAdd(APP_SETTING_USE_ARROWS, defaultValue: "false");
         dispatcher.Dispatch(new TaskListSetUseArrowsAction(bool.Parse(appSetting.Value)));
 
-        var items = dbContext.TaskListItems.ToArray();
+        var items = await _taskListRepo.Get();
         dispatcher.Dispatch(new TaskListSetAction(items));
     }
 
     [EffectMethod]
     public async Task OnSaveUseArrows(TaskListSaveUseArrowsAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == APP_SETTING_USE_ARROWS);
-        appSetting.Value = action.UseArrows.ToString();
-        dbContext.SaveChanges();
+        await _appSettingRepo.Update(APP_SETTING_USE_ARROWS, action.UseArrows.ToString());
         dispatcher.Dispatch(new TaskListSetUseArrowsAction(action.UseArrows));
     }
 
     [EffectMethod]
     public async Task OnTaskSave(TaskListSaveTaskAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        var isNew = action.Task.Id == 0;
+        var task = await _taskListRepo.Save(action.Task);
 
-        if (action.Task.Id == 0)
+        if (isNew)
         {
-            dbContext.TaskListItems.Add(action.Task);
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new TaskListAddTaskAction(action.Task));
+            dispatcher.Dispatch(new TaskListAddTaskAction(task));
         }
         else
         {
-            var tracking = dbContext.TaskListItems.Attach(action.Task);
-            tracking.State = EntityState.Modified;
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new TaskListUpdateTaskAction(action.Task));
+            dispatcher.Dispatch(new TaskListUpdateTaskAction(task));
         }
     }
 
     [EffectMethod]
     public async Task OnTaskDelete(TaskListDeleteTaskAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var tracking = dbContext.TaskListItems.Attach(action.Task);
-        tracking.State = EntityState.Deleted;
-        await dbContext.SaveChangesAsync();
+        await _taskListRepo.Delete(action.Task);
         dispatcher.Dispatch(new TaskListRemoveTaskAction(action.Task));
     }
 }

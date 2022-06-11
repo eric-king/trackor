@@ -47,6 +47,11 @@
 
     private void OnWeatherConfigSet(WeatherSetConfigAction action)
     {
+        if (string.IsNullOrEmpty(action.ApiKey) || string.IsNullOrEmpty(action.PostalCode))
+        {
+            return;
+        }
+
         _displayConfigForm = false;
         LoadCurrentWeatherConditions();
     }

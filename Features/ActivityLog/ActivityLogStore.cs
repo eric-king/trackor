@@ -1,7 +1,6 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
 
 namespace Trackor.Features.ActivityLog;
 
@@ -13,8 +12,8 @@ public record ActivityLogUpdateItemAction(ActivityLogItem Item);
 public record ActivityLogSaveItemAction(ActivityLogItem Item);
 public record ActivityLogDeleteItemAction(ActivityLogItem Item);
 public record ActivityLogRemoveItemAction(ActivityLogItem Item);
-public record ActivityLogArchiveAction(DateOnly StartDate, DateOnly EndDate);
-public record ActivityLogUnarchiveAction(DateOnly StartDate, DateOnly EndDate);
+public record ActivityLogArchiveAction(DateOnly Start, DateOnly End);
+public record ActivityLogUnarchiveAction(DateOnly Start, DateOnly End);
 
 public record ActivityLogState
 {
@@ -112,89 +111,53 @@ public static class ActivityLogReducers
 
 public class ActivityLogEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly ActivityLogRepository _repo;
 
-    public ActivityLogEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
+    public ActivityLogEffects(ActivityLogRepository repo)
     {
-        _db = dbFactory;
+        _repo = repo;
     }
 
     [EffectMethod(typeof(ActivityLogLoadItemsAction))]
     public async Task OnActivityLogLoad(IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var items = dbContext.ActivityLogItems
-            .Where(x => x.Archived == false)
-            .OrderByDescending(x => x.Date)
-            .ThenByDescending(x => x.Id)
-            .ToArray();
+        var items = await _repo.GetActive();
         dispatcher.Dispatch(new ActivityLogSetLogItemsAction(items));
     }
 
     [EffectMethod]
     public async Task OnActivityLogSave(ActivityLogSaveItemAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-
-        if (action.Item.Id == 0)
+        var isNew = action.Item.Id == 0;
+        var item = await _repo.Save(action.Item);
+        if (isNew)
         {
-            dbContext.ActivityLogItems.Add(action.Item);
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new ActivityLogAddItemAction(action.Item));
+            dispatcher.Dispatch(new ActivityLogAddItemAction(item));
         }
         else
         {
-            var tracking = dbContext.ActivityLogItems.Attach(action.Item);
-            tracking.State = EntityState.Modified;
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new ActivityLogUpdateItemAction(action.Item));
+            dispatcher.Dispatch(new ActivityLogUpdateItemAction(item));
         }
     }
 
     [EffectMethod]
     public async Task OnActivityLogDelete(ActivityLogDeleteItemAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-
-        var tracking = dbContext.ActivityLogItems.Attach(action.Item);
-        tracking.State = EntityState.Deleted;
-        await dbContext.SaveChangesAsync();
+        await _repo.Delete(action.Item);
         dispatcher.Dispatch(new ActivityLogRemoveItemAction(action.Item));
     }
 
     [EffectMethod]
     public async Task OnActivityLogArchive(ActivityLogArchiveAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-
-        var items = dbContext.ActivityLogItems
-            .Where(x => x.Date >= action.StartDate)
-            .Where(x => x.Date <= action.EndDate);
-
-        foreach (var item in items)
-        {
-            item.Archived = true;
-        }
-
-        await dbContext.SaveChangesAsync();
+        await _repo.Archive(action.Start, action.End);
         dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 
     [EffectMethod]
     public async Task OnActivityLogUnarchive(ActivityLogUnarchiveAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-
-        var items = dbContext.ActivityLogItems
-            .Where(x => x.Date >= action.StartDate)
-            .Where(x => x.Date <= action.EndDate);
-
-        foreach (var item in items)
-        {
-            item.Archived = false;
-        }
-
-        await dbContext.SaveChangesAsync();
+        await _repo.Unarchive(action.Start, action.End);
         dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 }

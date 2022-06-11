@@ -1,8 +1,7 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.ActivityLog;
 using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
 
 namespace Trackor.Features.Categories;
 
@@ -107,51 +106,45 @@ public static class CategoriesReducers
 
 public class CategoriesEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly CategoryRepository _repo;
 
-    public CategoriesEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
+    public CategoriesEffects(CategoryRepository repo)
     {
-        _db = dbFactory;
+        _repo = repo;
     }
 
     [EffectMethod(typeof(CategoriesLoadAction))]
     public async Task OnLoadCategories(IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var items = dbContext.Categories.ToArray();
+        var items = await _repo.Get();
         dispatcher.Dispatch(new CategoriesSetAction(items));
     }
 
     [EffectMethod]
     public async Task OnCategorySave(CategoriesSaveAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        var isNew = action.Category.Id == 0;
 
-        if (action.Category.Id == 0)
+        var category = await _repo.Save(action.Category);
+
+        if (isNew)
         {
-            dbContext.Categories.Add(action.Category);
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new CategoriesAddAction(action.Category));
+            dispatcher.Dispatch(new CategoriesAddAction(category));
         }
         else
         {
-            var tracking = dbContext.Categories.Attach(action.Category);
-            tracking.State = EntityState.Modified;
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new CategoriesUpdateAction(action.Category));
+            dispatcher.Dispatch(new CategoriesUpdateAction(category));
         }
     }
 
     [EffectMethod]
     public async Task OnCategoryDelete(CategoriesDeleteAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var logsWithThisCategory = dbContext.ActivityLogItems.Where(x => x.CategoryId == action.Category.Id);
-        foreach (var log in logsWithThisCategory) { log.CategoryId = null; }
-        var tracking = dbContext.Categories.Attach(action.Category);
-        tracking.State = EntityState.Deleted;
-        await dbContext.SaveChangesAsync();
+        await _repo.Delete(action.Category);
         dispatcher.Dispatch(new CategoriesRemoveAction(action.Category));
+
+        // reload the Activity Log items because some of them
+        // may have been assigned to this category
         dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 }

@@ -1,27 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SqliteWasmHelper;
 
 namespace Trackor.Features.Database
 {
     public class TrackorDbMigrator
     {
-        public const string APP_SETTING_DB_VERSION = "DbVersion";
-
+        private const string APP_SETTING_DB_VERSION = "DbVersion";
         private const string CurrentDbVersion = "1.02";
-        private readonly TrackorContext _dbContext;
+        private TrackorContext _dbContext;
+        private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
 
-        public TrackorDbMigrator(TrackorContext dbContext)
+        public TrackorDbMigrator(ISqliteWasmDbContextFactory<TrackorContext> db)
         {
-            _dbContext = dbContext;
+            _db = db;
         }
 
-        public async Task<string> ApplyCurrentDbVersionAsync()
+        public async Task<string> EnsureDbCreated() 
         {
-            _dbContext.ApplicationSettings.Add(new ApplicationSetting { Key = APP_SETTING_DB_VERSION, Value = CurrentDbVersion });
-            await _dbContext.SaveChangesAsync();
-            return CurrentDbVersion;
+            _dbContext = await _db.CreateDbContextAsync();
+
+            //var dbCreationSql = dbContext.Database.GenerateCreateScript();
+            //Console.WriteLine("Db Creation SQL:");
+            //Console.WriteLine(dbCreationSql);
+
+            bool freshDbCreated = await _dbContext.Database.EnsureCreatedAsync();
+            var dbVersionAppSetting = await _dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == APP_SETTING_DB_VERSION);
+            var dbVersion = await EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
+
+            return dbVersion;
         }
 
-        public async Task<string> EnsureDbMigratedAsync(string dbVersion)
+        public async Task DeleteDatabase()
+        {
+            _dbContext = await _db.CreateDbContextAsync();
+            _ = await _dbContext.Database.EnsureDeletedAsync();
+        }
+
+        private async Task<string> EnsureDbMigratedAsync(string dbVersion)
         {
             if (dbVersion == CurrentDbVersion)
             {
