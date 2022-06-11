@@ -11,6 +11,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<CategoryRepository>();
         services.AddSingleton<CodeSnippetRepository>();
         services.AddSingleton<ProjectRepository>();
+        services.AddSingleton<TaskListRepository>();
 
         return services;
     }
