@@ -1,7 +1,7 @@
 ﻿using Fluxor;
-using SqliteWasmHelper;
 using System.Net.Http.Json;
-using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
+using Trackor.Features.Notifications;
 
 namespace Trackor.Features.Weather;
 
@@ -72,15 +72,15 @@ public class WeatherEffects
     private const string APP_SETTING_UNITS = "WeatherUnits";
     private const string APP_SETTING_API_KEY = "WeatherApiKey";
 
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
     private readonly HttpClient _httpClient;
     private readonly IState<WeatherState> _weatherState;
+    private readonly ApplicationSettingRepository _appSettingRepo;
 
-    public WeatherEffects(ISqliteWasmDbContextFactory<TrackorContext> db, HttpClient httpClient, IState<WeatherState> weatherState)
+    public WeatherEffects(HttpClient httpClient, IState<WeatherState> weatherState, ApplicationSettingRepository appSettingRepo)
     {
-        _db = db;
         _httpClient = httpClient;
         _weatherState = weatherState;
+        _appSettingRepo = appSettingRepo;
     }
 
     [EffectMethod(typeof(WeatherLoadConfigAction))]
@@ -88,66 +88,32 @@ public class WeatherEffects
     {
         if (_weatherState.Value.IsWeatherConfigLoaded) { return; }
 
-        using var dbContext = await _db.CreateDbContextAsync();
+        var postalCode = await _appSettingRepo.GetOrAdd(APP_SETTING_POSTAL_CODE, defaultValue: string.Empty);
+        var countryCode = await _appSettingRepo.GetOrAdd(APP_SETTING_COUNTRY_CODE, defaultValue: "US");
+        var units = await _appSettingRepo.GetOrAdd(APP_SETTING_UNITS, defaultValue: "Imperial");
+        var apiKey = await _appSettingRepo.GetOrAdd(APP_SETTING_API_KEY, defaultValue: string.Empty);
 
-        var weatherConfigRecords = dbContext.ApplicationSettings.Where(x => x.Key.StartsWith("Weather")).ToList();
-        if (weatherConfigRecords.Count != 4)
+        if (string.IsNullOrEmpty(postalCode.Value) || string.IsNullOrEmpty(apiKey.Value))
         {
             dispatcher.Dispatch(new WeatherMustConfigureAction());
         }
-        else
-        {
-            var postalCode = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_POSTAL_CODE)).Value;
-            var countryCode = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_COUNTRY_CODE)).Value;
-            var units = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_UNITS)).Value;
-            var apiKey = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_API_KEY)).Value;
 
-            dispatcher.Dispatch(new WeatherSetConfigAction(postalCode, countryCode, units, apiKey));
-        }
+        dispatcher.Dispatch(new WeatherSetConfigAction(postalCode.Value, countryCode.Value, units.Value, apiKey.Value));
     }
 
     [EffectMethod]
     public async Task OnSaveConfig(WeatherSaveConfigAction action, IDispatcher dispatcher)
     {
-        ApplicationSetting postalCode;
-        ApplicationSetting countryCode;
-        ApplicationSetting units;
-        ApplicationSetting apiKey;
+        await _appSettingRepo.Update(APP_SETTING_POSTAL_CODE, action.PostalCode);
+        await _appSettingRepo.Update(APP_SETTING_COUNTRY_CODE, action.CountryCode);
+        await _appSettingRepo.Update(APP_SETTING_UNITS, action.Units);
+        await _appSettingRepo.Update(APP_SETTING_API_KEY, action.ApiKey);
 
-        using var dbContext = await _db.CreateDbContextAsync();
-        var weatherConfigRecords = dbContext.ApplicationSettings.Where(x => x.Key.StartsWith("Weather")).ToList();
-
-        if (weatherConfigRecords.Count != 4)
-        {
-            postalCode = new ApplicationSetting { Key = APP_SETTING_POSTAL_CODE, Value = action.PostalCode };
-            countryCode = new ApplicationSetting { Key = APP_SETTING_COUNTRY_CODE, Value = action.CountryCode };
-            units = new ApplicationSetting { Key = APP_SETTING_UNITS, Value = action.Units };
-            apiKey = new ApplicationSetting { Key = APP_SETTING_API_KEY, Value = action.ApiKey };
-
-            dbContext.ApplicationSettings.Add(postalCode);
-            dbContext.ApplicationSettings.Add(countryCode);
-            dbContext.ApplicationSettings.Add(units);
-            dbContext.ApplicationSettings.Add(apiKey);
-        }
-        else
-        {
-            postalCode = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_POSTAL_CODE));
-            countryCode = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_COUNTRY_CODE));
-            units = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_UNITS));
-            apiKey = weatherConfigRecords.Single(x => x.Key.Equals(APP_SETTING_API_KEY));
-
-            postalCode.Value = action.PostalCode;
-            countryCode.Value = action.CountryCode;
-            units.Value = action.Units;
-            apiKey.Value = action.ApiKey;
-        }
-
-        dbContext.SaveChanges();
-        dispatcher.Dispatch(new WeatherSetConfigAction(postalCode.Value, countryCode.Value, units.Value, apiKey.Value));
+        dispatcher.Dispatch(new WeatherSetConfigAction(action.PostalCode, action.CountryCode, action.Units, action.ApiKey));
     }
 
     [EffectMethod(typeof(WeatherGetCurrentConditionsAction))]
-    public async Task OnGetCurrentConditions(IDispatcher dispatcher) 
+    public async Task OnGetCurrentConditions(IDispatcher dispatcher)
     {
         var zip = _weatherState.Value.PostalCode;
         var countryCode = _weatherState.Value.CountryCode;
@@ -156,10 +122,14 @@ public class WeatherEffects
 
         var apiUrl = $"https://api.openweathermap.org/data/2.5/weather?zip={zip},{countryCode}&appid={apiKey}&units={units}";
         var response = await _httpClient.GetAsync(apiUrl);
-        
-        // Todo: Display error message on unsuccessful response
+
+        if (!response.IsSuccessStatusCode) 
+        {
+            dispatcher.Dispatch(new SnackbarShowErrorAction($"Error getting current weather conditions. Please ensure your Postal Code and API Key are valid."));
+            return;
+        }
 
         var openWeatherMapConditions = await response.Content.ReadFromJsonAsync<OpenWeatherMapConditions>();
         dispatcher.Dispatch(new WeatherSetConditionsAction(openWeatherMapConditions.ToWeatherConditions(_weatherState.Value.Units)));
-    } 
+    }
 }
