@@ -4,10 +4,11 @@ namespace Trackor.Features.Database;
 
 public static class DatabaseServiceExtensions
 {
-    public static IServiceCollection AddTrackorRepositories(this IServiceCollection services) 
+    public static IServiceCollection AddTrackorRepositories(this IServiceCollection services)
     {
         services.AddSingleton<ActivityLogRepository>();
-        
+        services.AddSingleton<CategoryRepository>();
+
         return services;
     }
 }
