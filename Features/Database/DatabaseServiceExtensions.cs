@@ -7,6 +7,7 @@ public static class DatabaseServiceExtensions
     public static IServiceCollection AddTrackorRepositories(this IServiceCollection services)
     {
         services.AddSingleton<ActivityLogRepository>();
+        services.AddSingleton<ApplicationSettingRepository>();
         services.AddSingleton<CategoryRepository>();
 
         return services;
