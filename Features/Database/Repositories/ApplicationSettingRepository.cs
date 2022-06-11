@@ -34,4 +34,20 @@ public class ApplicationSettingRepository
         existing.Value = value;
         dbContext.SaveChanges();
     }
+
+    public async Task<ApplicationSetting> Toggle(string key) 
+    {
+        var dbContext = await _db.CreateDbContextAsync();
+        var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == key);
+
+        if (appSetting is null || bool.TryParse(appSetting.Value, out bool appSettingValue) == false) 
+        {
+            throw new ApplicationException($"ApplicationSetting {key} is not a valid boolean setting.");
+        }
+
+        appSetting.Value = (!appSettingValue).ToString();
+        dbContext.SaveChanges();
+
+        return appSetting;
+    }
 }
