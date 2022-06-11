@@ -22,6 +22,7 @@ builder.Services.AddFluxor(o =>
 #endif
 });
 builder.Services.AddSqliteWasmDbContextFactory<TrackorContext>(options => options.UseSqlite("Data Source=trackor.sqlite3"));
+builder.Services.AddTrackorRepositories();
 builder.Services.AddMudServices(config => config.ConfigureWithTrackorDefaults());
 
 await builder.Build().RunAsync();
