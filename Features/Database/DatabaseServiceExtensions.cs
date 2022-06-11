@@ -9,6 +9,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<ActivityLogRepository>();
         services.AddSingleton<ApplicationSettingRepository>();
         services.AddSingleton<CategoryRepository>();
+        services.AddSingleton<CodeSnippetRepository>();
         services.AddSingleton<ProjectRepository>();
 
         return services;

@@ -1,7 +1,7 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
+using Trackor.Features.Notifications;
 
 namespace Trackor.Features.SnippetLibrary;
 
@@ -101,55 +101,49 @@ public static class SnippetLibraryReducers
 
 public class SnippetLibraryEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly CodeSnippetRepository _repo;
 
-    public SnippetLibraryEffects(ISqliteWasmDbContextFactory<TrackorContext> db)
+    public SnippetLibraryEffects(CodeSnippetRepository repo)
     {
-        _db = db;
+        _repo = repo;
     }
 
     [EffectMethod]
     public async Task OnCodeSnippetSearch(SnippetLibrarySearchCodeSnippetsAction action, IDispatcher dispatcher)
     {
         dispatcher.Dispatch(new SnippetLibrarySetCodeSnippetsAction(Array.Empty<CodeSnippet>()));
-
-        using var dbContext = await _db.CreateDbContextAsync();
-        var snippets = dbContext.CodeSnippets
-            .Where(x => EF.Functions.Like(x.Label, $"%{action.SearchTerm}%") 
-                     || EF.Functions.Like(x.Content, $"%{action.SearchTerm}%")
-                     || EF.Functions.Like(x.Language, $"%{action.SearchTerm}%"))
-            .OrderBy(x => x.Label)
-            .ToArray();
-        dispatcher.Dispatch(new SnippetLibrarySetCodeSnippetsAction(snippets));
+        
+        var snippets = await _repo.Search(action.SearchTerm);
+        if (!snippets.Any())
+        {
+            dispatcher.Dispatch(new SnackbarShowWarningAction($"No snippets match your search of {action.SearchTerm}"));
+        }
+        else 
+        {
+            dispatcher.Dispatch(new SnippetLibrarySetCodeSnippetsAction(snippets));
+        }
     }
 
     [EffectMethod]
     public async Task OnCodeSnippetSave(SnippetLibrarySaveCodeSnippetAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        var isNew = action.CodeSnippet.Id == 0;
+        var codeSnippet = await _repo.Save(action.CodeSnippet);
 
-        if (action.CodeSnippet.Id == 0)
+        if (isNew)
         {
-            dbContext.CodeSnippets.Add(action.CodeSnippet);
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new SnippetLibraryAddCodeSnippetAction(action.CodeSnippet));
+            dispatcher.Dispatch(new SnippetLibraryAddCodeSnippetAction(codeSnippet));
         }
         else 
         {
-            var tracking = dbContext.CodeSnippets.Attach(action.CodeSnippet);
-            tracking.State = EntityState.Modified;
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new SnippetLibraryUpdateCodeSnippetAction(action.CodeSnippet));
+            dispatcher.Dispatch(new SnippetLibraryUpdateCodeSnippetAction(codeSnippet));
         }
     }
 
     [EffectMethod]
     public async Task OnCodeSnippetDelete(SnippetLibraryDeleteCodeSnippetAction action, IDispatcher dispatcher) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var tracking = dbContext.CodeSnippets.Attach(action.CodeSnippet);
-        tracking.State = EntityState.Deleted;
-        await dbContext.SaveChangesAsync();
+        await _repo.Delete(action.CodeSnippet);
         dispatcher.Dispatch(new SnippetLibraryRemoveCodeSnippetAction(action.CodeSnippet));
     }
 }
