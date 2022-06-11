@@ -16,7 +16,7 @@ public class CategoryRepository
     public async Task<Category[]> Get()
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var items = dbContext.Categories.ToArray();
+        var items = dbContext.Categories.OrderBy(x => x.Title).ToArray();
 
         return items;
     }

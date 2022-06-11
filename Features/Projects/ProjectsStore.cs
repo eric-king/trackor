@@ -1,8 +1,7 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.ActivityLog;
 using Trackor.Features.Database;
+using Trackor.Features.Database.Repositories;
 
 namespace Trackor.Features.Projects;
 
@@ -107,51 +106,45 @@ public static class ProjectsReducers
 
 public class ProjectsEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+    private readonly ProjectRepository _repo;
 
-    public ProjectsEffects(ISqliteWasmDbContextFactory<TrackorContext> dbFactory)
+    public ProjectsEffects(ProjectRepository repo)
     {
-        _db = dbFactory;
+        _repo = repo;
     }
 
     [EffectMethod(typeof(ProjectsLoadAction))]
     public async Task OnProjectsLoad(IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var items = dbContext.Projects.ToList().OrderBy(x => x.Title).ToArray();
+        var items = await _repo.Get();
         dispatcher.Dispatch(new ProjectsSetAction(items));
     }
 
     [EffectMethod]
     public async Task OnProjectSave(ProjectsSaveAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        var isNew = action.Project.Id == 0;
+        var project = await _repo.Save(action.Project);
 
-        if (action.Project.Id == 0)
+        if (isNew)
         {
-            dbContext.Projects.Add(action.Project);
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new ProjectsAddAction(action.Project));
+            dispatcher.Dispatch(new ProjectsAddAction(project));
         }
         else
         {
-            var tracking = dbContext.Projects.Attach(action.Project);
-            tracking.State = EntityState.Modified;
-            await dbContext.SaveChangesAsync();
-            dispatcher.Dispatch(new ProjectsUpdateAction(action.Project));
+            dispatcher.Dispatch(new ProjectsUpdateAction(project));
         }
     }
 
     [EffectMethod]
     public async Task OnProjectDelete(ProjectsDeleteAction action, IDispatcher dispatcher)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
-        var logsWithThisProject = dbContext.ActivityLogItems.Where(x => x.ProjectId == action.Project.Id);
-        foreach (var log in logsWithThisProject) { log.ProjectId = null; }
-        var tracking = dbContext.Projects.Attach(action.Project);
-        tracking.State = EntityState.Deleted;
-        await dbContext.SaveChangesAsync();
+        await _repo.Delete(action.Project);
+        
         dispatcher.Dispatch(new ProjectsRemoveAction(action.Project));
+
+        // reload the Activity Log items because some of them
+        // may have been assigned to this project
         dispatcher.Dispatch(new ActivityLogLoadItemsAction());
     }
 }
