@@ -4,8 +4,9 @@ namespace Trackor.Features.Database;
 
 public static class DatabaseServiceExtensions
 {
-    public static IServiceCollection AddTrackorRepositories(this IServiceCollection services)
+    public static IServiceCollection AddTrackorDb(this IServiceCollection services)
     {
+        services.AddSingleton<TrackorDbMigrator>();
         services.AddSingleton<ActivityLogRepository>();
         services.AddSingleton<ApplicationSettingRepository>();
         services.AddSingleton<CategoryRepository>();

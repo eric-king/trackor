@@ -1,7 +1,5 @@
 ﻿using Fluxor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
-using SqliteWasmHelper;
 using Trackor.Features.Theme;
 
 namespace Trackor.Features.Database;
@@ -79,13 +77,13 @@ public static class CoreReducers
 
 public class DatabaseEffects
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
     private readonly IJSRuntime _js;
     private readonly IState<DatabaseState> _state;
+    private readonly TrackorDbMigrator _dbMigrator;
 
-    public DatabaseEffects(ISqliteWasmDbContextFactory<TrackorContext> db, IJSRuntime jsRuntime, IState<DatabaseState> state)
+    public DatabaseEffects(TrackorDbMigrator dbMigrator, IJSRuntime jsRuntime, IState<DatabaseState> state)
     {
-        _db = db;
+        _dbMigrator = dbMigrator;
         _js = jsRuntime;
         _state = state;
     }
@@ -94,16 +92,7 @@ public class DatabaseEffects
     public async Task OnSetupDb(IDispatcher dispatcher)
     {
         var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./js/database.js");
-        var dbContext = await _db.CreateDbContextAsync();
-
-        //var dbCreationSql = dbContext.Database.GenerateCreateScript();
-        //Console.WriteLine("Db Creation SQL:");
-        //Console.WriteLine(dbCreationSql);
-
-        bool freshDbCreated = await dbContext.Database.EnsureCreatedAsync();
-        var dbVersionAppSetting = await dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == TrackorDbMigrator.APP_SETTING_DB_VERSION);
-        var migrator = new TrackorDbMigrator(dbContext);
-        var dbVersion = await migrator.EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
+        var dbVersion = await _dbMigrator.EnsureDbCreated();
 
         dispatcher.Dispatch(new DatabaseSetDbVersionAction(dbVersion));
         dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));
@@ -131,8 +120,7 @@ public class DatabaseEffects
 
         if (success)
         {
-            var dbContext = await _db.CreateDbContextAsync();
-            _ = await dbContext.Database.EnsureDeletedAsync();
+            await _dbMigrator.DeleteDatabase();
             dispatcher.Dispatch(new DatabaseDeletedAction());
         }
     }

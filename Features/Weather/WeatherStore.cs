@@ -93,12 +93,13 @@ public class WeatherEffects
         var units = await _appSettingRepo.GetOrAdd(APP_SETTING_UNITS, defaultValue: "Imperial");
         var apiKey = await _appSettingRepo.GetOrAdd(APP_SETTING_API_KEY, defaultValue: string.Empty);
 
+        dispatcher.Dispatch(new WeatherSetConfigAction(postalCode.Value, countryCode.Value, units.Value, apiKey.Value));
+
         if (string.IsNullOrEmpty(postalCode.Value) || string.IsNullOrEmpty(apiKey.Value))
         {
             dispatcher.Dispatch(new WeatherMustConfigureAction());
         }
 
-        dispatcher.Dispatch(new WeatherSetConfigAction(postalCode.Value, countryCode.Value, units.Value, apiKey.Value));
     }
 
     [EffectMethod]
