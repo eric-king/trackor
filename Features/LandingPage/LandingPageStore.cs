@@ -61,6 +61,20 @@ public class LandingPageFeature : Feature<LandingPageState>
                 },
                 new LandingPageItem
                 {
+                    HeaderText = "Link Library",
+                    BodyText = "Store useful web page URLs for future reference",
+                    ImageUrl = "images/links.jpg",
+                    Links = new ItemLink[]
+                    {
+                        new ItemLink
+                        {
+                            Text = "Link Library",
+                            Url = "/links"
+                        }
+                    }
+                },
+                new LandingPageItem
+                {
                     HeaderText = "Pomodoro",
                     BodyText = "Direct your attention with manageable chunks of time",
                     ImageUrl = "images/countdown_timer.jpg",
