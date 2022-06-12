@@ -1,0 +1,113 @@
+﻿@inherits FluxorComponent
+
+@inject IDispatcher Dispatcher
+
+<MudExpansionPanels Class="mb-3" Elevation="6">
+    <MudExpansionPanel @ref="_formPanel" Text="Add Link">
+        <MudPaper Class="pa-3 mb-3" Outlined="true">
+            <MudFocusTrap DefaultFocus="DefaultFocus.None">
+                <MudForm @ref="_linkForm" @bind-IsValid="@_formIsValid">
+                    <MudGrid>
+                        <MudItem xs="6">
+                            <MudTextField @ref="_labelFieldRef" T="string" Label="Link Label" @bind-Value="_linkLabel" Immediate="true" Required="true" RequiredError="" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField T="string" title="Link Url" Label="Link URL" @bind-Value="_linkUrl" Validation="@(new Func<string, string>(ValidateLinkUrl))" Immediate="true" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Page Description" Variant="Variant.Outlined" @bind-Value="@_linkDescription" Lines="5" />
+                        </MudItem>
+                    </MudGrid>
+                    <MudGrid>
+                        <MudItem xs="2" md="8"></MudItem>
+                        <MudItem xs="10" md="4" Style="text-align:right">
+                            @if (_selectedId != 0)
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ResetForm">Cancel Edit</MudButton>
+                            }
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_formIsValid)" OnClick="SaveLink" Class="ml-3">Save</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudFocusTrap>
+        </MudPaper>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+
+    MudForm _linkForm;
+    MudTextField<string> _labelFieldRef;
+    MudExpansionPanel _formPanel;
+    UrlAttribute _urlValidator;
+    bool _formIsValid = true;
+
+    int _selectedId = 0;
+    string _linkLabel = "";
+    string _linkUrl = "";
+    string _linkDescription = "";
+
+    protected override void OnInitialized()
+    {
+        _urlValidator = new UrlAttribute();
+        _urlValidator.ErrorMessage = "Link URL must be a valid fully-qualified URL";
+        SubscribeToAction<LinkLibraryEditLinkAction>(EditLink);
+        base.OnInitialized();
+    }
+
+    private void EditLink(LinkLibraryEditLinkAction action)
+    {
+        _selectedId = action.Link.Id;
+        _linkLabel = action.Link.Label;
+        _linkUrl = action.Link.Url;
+        _linkDescription = action.Link.Description;
+        _formPanel.Expand();
+
+        _linkForm.ResetValidation();
+    }
+
+    private async Task SaveLink()
+    {
+        var link = new LinkLibraryItem
+            {
+                Id = _selectedId,
+                Label = _linkLabel,
+                Url = _linkUrl,
+                Description = _linkDescription
+            };
+
+        Dispatcher.Dispatch(new LinkLibrarySaveLinkAction(link));
+
+        await ResetForm();
+    }
+
+    private async Task ResetForm()
+    {
+        _selectedId = 0;
+        _linkLabel = "";
+        _linkUrl = "";
+        _linkDescription = "";
+        _formIsValid = false;
+
+        await _labelFieldRef.FocusAsync();
+    }
+
+    private string ValidateLinkUrl(string linkUrl)
+    {
+        string errorMessage = null;
+
+        if (!string.IsNullOrEmpty(linkUrl))
+        {
+            try
+            {
+                _urlValidator.Validate(linkUrl, "Link URL");
+            }
+            catch (ValidationException ex)
+            {
+                errorMessage = ex.Message;
+            }
+        }
+
+        return errorMessage;
+    }
+}

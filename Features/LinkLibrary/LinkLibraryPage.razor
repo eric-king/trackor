@@ -1,0 +1,24 @@
+﻿@page "/links"
+@inherits FluxorComponent
+
+@inject IState<LinkLibraryState> LinkLibraryState
+
+@using Trackor.Features.LinkLibrary.Components
+
+<PageTitle>Link Library</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    <MudIcon Icon="@Icons.Filled.Link" /> Link Library
+</MudText>
+
+<LinkLibrarySearchBar />
+<LinkLibraryForm />
+
+@foreach (var link in LinkLibraryState.Value.Links)
+{
+    <LinkLibraryItemDisplay Link="link" />
+}
+
+@code {
+
+}

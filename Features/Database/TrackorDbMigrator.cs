@@ -6,24 +6,25 @@ namespace Trackor.Features.Database
     public class TrackorDbMigrator
     {
         private const string APP_SETTING_DB_VERSION = "DbVersion";
-        private const string CurrentDbVersion = "1.02";
+        private const string CurrentDbVersion = "1.03";
         private TrackorContext _dbContext;
-        private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
+        private readonly ISqliteWasmDbContextFactory<TrackorContext> _dbContextFactory;
 
-        public TrackorDbMigrator(ISqliteWasmDbContextFactory<TrackorContext> db)
+        public TrackorDbMigrator(ISqliteWasmDbContextFactory<TrackorContext> dbContextFactory)
         {
-            _db = db;
+            _dbContextFactory = dbContextFactory;
         }
 
-        public async Task<string> EnsureDbCreated() 
+        public async Task<string> EnsureDbCreated()
         {
-            _dbContext = await _db.CreateDbContextAsync();
+            _dbContext = await _dbContextFactory.CreateDbContextAsync();
+            
+            // uncomment the following line to see the CREATE TABLE
+            // scripts in the browser console when generating a new
+            // database - this is useful when creating new migrations
+            //OutputDbScriptToConsole();
 
-            //var dbCreationSql = dbContext.Database.GenerateCreateScript();
-            //Console.WriteLine("Db Creation SQL:");
-            //Console.WriteLine(dbCreationSql);
-
-            bool freshDbCreated = await _dbContext.Database.EnsureCreatedAsync();
+            _ = await _dbContext.Database.EnsureCreatedAsync();
             var dbVersionAppSetting = await _dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == APP_SETTING_DB_VERSION);
             var dbVersion = await EnsureDbMigratedAsync(dbVersionAppSetting?.Value);
 
@@ -32,7 +33,7 @@ namespace Trackor.Features.Database
 
         public async Task DeleteDatabase()
         {
-            _dbContext = await _db.CreateDbContextAsync();
+            _dbContext = await _dbContextFactory.CreateDbContextAsync();
             _ = await _dbContext.Database.EnsureDeletedAsync();
         }
 
@@ -53,12 +54,20 @@ namespace Trackor.Features.Database
             {
                 await Migrate_101_TaskListItems();
                 await Migrate_102_CodeSnippets();
+                await Migrate_103_Links();
                 dbVersion = CurrentDbVersion;
             }
 
             if (dbVersion == "1.01")
             {
                 await Migrate_102_CodeSnippets();
+                await Migrate_103_Links();
+                dbVersion = CurrentDbVersion;
+            }
+
+            if (dbVersion == "1.02")
+            {
+                await Migrate_103_Links();
                 dbVersion = CurrentDbVersion;
             }
 
@@ -107,6 +116,26 @@ namespace Trackor.Features.Database
 
             _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_CODE_SNIPPETS);
             await ApplyDbVersionAsync("1.02");
+        }
+
+        private async Task Migrate_103_Links()
+        {
+            const string Create_Table_LINKS = @"CREATE TABLE ""Links"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_Links"" PRIMARY KEY AUTOINCREMENT,
+                ""Url"" TEXT NULL,
+                ""Label"" TEXT NULL,
+                ""Description"" TEXT NULL
+            );";
+
+            _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_LINKS);
+            await ApplyDbVersionAsync("1.03");
+        }
+
+        private void OutputDbScriptToConsole()
+        {
+            var dbCreationSql = _dbContext.Database.GenerateCreateScript();
+            Console.WriteLine("Db Creation SQL:");
+            Console.WriteLine(dbCreationSql);
         }
     }
 }
