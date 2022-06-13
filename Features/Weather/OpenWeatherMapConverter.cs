@@ -23,7 +23,7 @@ public static class OpenWeatherMapConverter
             Time = DateTime.Now,
             Location = openWeatherMapConditions.name,
             Description = ti.ToTitleCase(string.Join(", ", openWeatherMapConditions.weather.Select(x => x.description))),
-            Icons = openWeatherMapConditions.weather.Select(x => $"http://openweathermap.org/img/wn/{x.icon}@2x.png" ).ToArray()
+            Icons = openWeatherMapConditions.weather.Select(x => $"https://openweathermap.org/img/wn/{x.icon}@2x.png" ).ToArray()
         };
 
         return trackorConditions;
