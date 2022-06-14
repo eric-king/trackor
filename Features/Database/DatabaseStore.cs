@@ -1,5 +1,6 @@
 ﻿using Fluxor;
 using Microsoft.JSInterop;
+using Trackor.Features.Database.Repositories;
 using Trackor.Features.Theme;
 
 namespace Trackor.Features.Database;
@@ -13,11 +14,19 @@ public record DatabaseDeleteAction();
 public record DatabaseDeletedAction();
 public record DatabaseUploadAction(byte[] DbFile);
 public record DatabaseUploadedAction();
+public record DatabaseLoadStatsAction();
+public record DatabaseSetStatsAction(int ActivityCount, int CategoryCount, int CodeSnippetCount, int LinkCount, int ProjectCount, int TaskCount);
 
 public record DatabaseState
 {
     public string DownloadUrl { get; init; }
     public string DbVersion { get; init; }
+    public int ActivityCount { get; init; }
+    public int CategoryCount { get; init; }
+    public int CodeSnippetCount { get; init; }
+    public int LinkCount { get; init; }
+    public int ProjectCount { get; init; }
+    public int TaskCount { get; init; }
     public IJSObjectReference DbCacheModule { get; init; }
 }
 
@@ -31,6 +40,12 @@ public class DatabaseFeature : Feature<DatabaseState>
         {
             DownloadUrl = string.Empty,
             DbVersion = "Unknown",
+            ActivityCount = 0,
+            CategoryCount = 0,
+            CodeSnippetCount = 0,
+            LinkCount = 0,
+            ProjectCount = 0,
+            TaskCount = 0,
             DbCacheModule = null
         };
     }
@@ -65,6 +80,20 @@ public static class CoreReducers
         };
     }
 
+    [ReducerMethod]
+    public static DatabaseState OnSetStats(DatabaseState state, DatabaseSetStatsAction action)
+    {
+        return state with
+        {
+            ActivityCount = action.ActivityCount,
+            CategoryCount = action.CategoryCount,
+            CodeSnippetCount = action.CodeSnippetCount,
+            LinkCount = action.LinkCount,
+            ProjectCount = action.ProjectCount,
+            TaskCount = action.TaskCount
+        };
+    }
+
     [ReducerMethod(typeof(DatabaseDeletedAction))]
     public static DatabaseState OnDatabaseDeleted(DatabaseState state)
     {
@@ -80,12 +109,14 @@ public class DatabaseEffects
     private readonly IJSRuntime _js;
     private readonly IState<DatabaseState> _state;
     private readonly TrackorDbMigrator _dbMigrator;
+    private readonly DatabaseStatsRepository _statsRepo;
 
-    public DatabaseEffects(TrackorDbMigrator dbMigrator, IJSRuntime jsRuntime, IState<DatabaseState> state)
+    public DatabaseEffects(TrackorDbMigrator dbMigrator, IJSRuntime jsRuntime, IState<DatabaseState> state, DatabaseStatsRepository statsRepo)
     {
         _dbMigrator = dbMigrator;
         _js = jsRuntime;
         _state = state;
+        _statsRepo = statsRepo;
     }
 
     [EffectMethod(typeof(DatabaseSetUpDbAction))]
@@ -130,5 +161,18 @@ public class DatabaseEffects
     {
             await _state.Value.DbCacheModule.InvokeVoidAsync("uploadDatabase", action.DbFile);
             dispatcher.Dispatch(new DatabaseUploadedAction());
+    }
+
+    [EffectMethod(typeof(DatabaseLoadStatsAction))]
+    public async Task OnLoadStats(IDispatcher dispatcher)
+    {
+        int activityCount = await _statsRepo.GetActivityLogItemCount();
+        int categoryCount = await _statsRepo.GetCategoryCount();
+        int codeSnippetCount = await _statsRepo.GetCodeSnippetCount();
+        int linkCount = await _statsRepo.GetLinkCount();
+        int projectCount = await _statsRepo.GetProjectCount();
+        int taskCount = await _statsRepo.GetTaskCount();
+
+        dispatcher.Dispatch(new DatabaseSetStatsAction(activityCount, categoryCount, codeSnippetCount, linkCount, projectCount, taskCount));
     }
 }

@@ -1,6 +1,8 @@
 ﻿@page "/database"
 @inherits FluxorComponent
 
+@using Trackor.Features.Database.Components
+
 @inject NavigationManager NavigationManager
 @inject IState<DatabaseState> DatabaseState
 @inject IDispatcher Dispatcher
@@ -16,7 +18,7 @@
 <InputFile id="dbInputFile" OnChange="UploadFile" hidden accept=".sqlite3" />
 
 <MudAlert Severity="Severity.Error" Class="mb-6" Elevation="6">
-    This application's data is saved in a SQLite database file in the application (browser) cache. 
+    This application's data is saved in a SQLite database file in the application (browser) cache.
     If the cache is cleared for any reason, all saved data will be lost. It is recommended to
     periodically download the database file if you would like to store a backup.
 </MudAlert>
@@ -60,12 +62,25 @@
     </MudItem>
 </MudGrid>
 
+<MudPaper Class="mt-6 mb-3 pa-3" Elevation="6">
+    <MudText Typo="Typo.h4" Class="mb-3">Database Statistics:</MudText>
+    <MudGrid>
+        <DatabaseStatBlock Label="Activity Log Items" Icon="@Icons.Material.Filled.EventNote" Count="DatabaseState.Value.ActivityCount" />
+        <DatabaseStatBlock Label="Tasks" Icon="@Icons.Outlined.Task" Count="DatabaseState.Value.TaskCount" />
+        <DatabaseStatBlock Label="Code Snippets" Icon="@Icons.Filled.Code" Count="DatabaseState.Value.CodeSnippetCount" />
+        <DatabaseStatBlock Label="Links" Icon="@Icons.Filled.Link" Count="DatabaseState.Value.LinkCount" />
+        <DatabaseStatBlock Label="Categories" Icon="@Icons.Material.Filled.FolderCopy" Count="DatabaseState.Value.CategoryCount" />
+        <DatabaseStatBlock Label="Projects" Icon="@Icons.Material.Filled.Handyman" Count="DatabaseState.Value.ProjectCount" />
+    </MudGrid>
+</MudPaper>
+
 @code {
     string dbFileName;
 
     protected override void OnInitialized()
     {
         Dispatcher.Dispatch(new DatabaseBuildDownloadUrlAction());
+        Dispatcher.Dispatch(new DatabaseLoadStatsAction());
         SetDownloadFileNameWithTimestamp();
         SubscribeToAction<DatabaseUploadedAction>((action) => RefreshPage());
         SubscribeToAction<DatabaseDeletedAction>((action) => RefreshPage());
