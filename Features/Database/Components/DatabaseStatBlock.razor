@@ -1,0 +1,29 @@
+﻿<MudItem xs="12" sm="12" md="6" lg="4" xl="3">
+    <MudCard Elevation="3">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h5">@Label</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIcon Icon="@Icon" Color="Color.Default" Size="Size.Large" Class="mt-2" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h1" Align="Align.Center">
+                @Count
+            </MudText>
+        </MudCardContent>
+    </MudCard>
+</MudItem>
+
+@code {
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public int Count { get; set; }
+}

@@ -11,6 +11,7 @@ public static class DatabaseServiceExtensions
         services.AddSingleton<ApplicationSettingRepository>();
         services.AddSingleton<CategoryRepository>();
         services.AddSingleton<CodeSnippetRepository>();
+        services.AddSingleton<DatabaseStatsRepository>();
         services.AddSingleton<LinkLibraryRepository>();
         services.AddSingleton<ProjectRepository>();
         services.AddSingleton<TaskListRepository>();
