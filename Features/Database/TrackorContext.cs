@@ -11,12 +11,6 @@ namespace Trackor.Features.Database
 {
     public class TrackorContext : DbContext
     {
-        /// <summary>
-        /// FIXME: This is required for EF Core 6.0 as it is not compatible with trimming.
-        /// </summary>
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-        private static Type _keepDateOnly = typeof(DateOnly);
-
         public TrackorContext(DbContextOptions<TrackorContext> options) : base(options) { }
 
         public DbSet<ActivityLogItem> ActivityLogItems { get; set; }
