@@ -22,6 +22,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<PackageReference Include="Bit.Besql" Version="8.7.5" />
 		<PackageReference Include="Fluxor" Version="5.9.1" />
 		<PackageReference Include="Fluxor.Blazor.Web" Version="5.9.1" />
 		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="5.9.1" />
@@ -33,7 +34,6 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2" />
 		<PackageReference Include="MudBlazor" Version="6.15.0" />
-		<PackageReference Include="SqliteWasmHelper" Version="1.0.43-beta-g31b50d1f54" />
 	</ItemGroup>
 	
 	<ItemGroup>

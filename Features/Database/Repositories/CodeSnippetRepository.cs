@@ -1,21 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.SnippetLibrary;
 
 namespace Trackor.Features.Database.Repositories;
 
-public class CodeSnippetRepository
+public class CodeSnippetRepository(IDbContextFactory<TrackorContext> db)
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
-
-    public CodeSnippetRepository(ISqliteWasmDbContextFactory<TrackorContext> db)
-    {
-        _db = db;
-    }
-
     public async Task<CodeSnippet[]> Search(string searchTerm) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
         var snippets = dbContext.CodeSnippets
             .Where(x => EF.Functions.Like(x.Label, $"%{searchTerm}%")
                      || EF.Functions.Like(x.Content, $"%{searchTerm}%")
@@ -28,7 +20,7 @@ public class CodeSnippetRepository
 
     public async Task<CodeSnippet> Save(CodeSnippet codeSnippet)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         if (codeSnippet.Id == 0)
         {
@@ -47,7 +39,7 @@ public class CodeSnippetRepository
 
     public async Task Delete(CodeSnippet codeSnippet)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
         var tracking = dbContext.CodeSnippets.Attach(codeSnippet);
         tracking.State = EntityState.Deleted;
         await dbContext.SaveChangesAsync();

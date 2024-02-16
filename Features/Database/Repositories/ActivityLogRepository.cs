@@ -1,21 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.ActivityLog;
 
 namespace Trackor.Features.Database.Repositories;
 
-public class ActivityLogRepository
+public class ActivityLogRepository(IDbContextFactory<TrackorContext> db)
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
-
-    public ActivityLogRepository(ISqliteWasmDbContextFactory<TrackorContext> db)
-    {
-        _db = db;
-    }
-
     public async Task<ActivityLogItem[]> GetActive() 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         var items = dbContext.ActivityLogItems
             .Where(x => x.Archived == false)
@@ -28,7 +20,7 @@ public class ActivityLogRepository
 
     public async Task<ActivityLogItem> Save(ActivityLogItem item) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         if (item.Id == 0)
         {
@@ -47,7 +39,7 @@ public class ActivityLogRepository
 
     public async Task Delete(ActivityLogItem item) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         var tracking = dbContext.ActivityLogItems.Attach(item);
         tracking.State = EntityState.Deleted;
@@ -56,7 +48,7 @@ public class ActivityLogRepository
 
     public async Task Archive(DateOnly start, DateOnly end) 
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
         
         var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= start)
@@ -72,7 +64,7 @@ public class ActivityLogRepository
 
     public async Task Unarchive(DateOnly start, DateOnly end)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         var items = dbContext.ActivityLogItems
             .Where(x => x.Date >= start)

@@ -1,21 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.Projects;
 
 namespace Trackor.Features.Database.Repositories;
 
-public class ProjectRepository
+public class ProjectRepository(IDbContextFactory<TrackorContext> db)
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
-
-    public ProjectRepository(ISqliteWasmDbContextFactory<TrackorContext> db)
-    {
-        _db = db;
-    }
-
     public async Task<Project[]> Get()
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
         var items = dbContext.Projects.OrderBy(x => x.Title).ToArray();
 
         return items;
@@ -23,7 +15,7 @@ public class ProjectRepository
 
     public async Task<Project> Save(Project project)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         if (project.Id == 0)
         {
@@ -42,7 +34,7 @@ public class ProjectRepository
 
     public async Task Delete(Project project)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         DisconnectActivityLogItemsFromProject(project, dbContext);
 

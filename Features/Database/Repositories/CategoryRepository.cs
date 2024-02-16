@@ -1,21 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 using Trackor.Features.Categories;
 
 namespace Trackor.Features.Database.Repositories;
 
-public class CategoryRepository
+public class CategoryRepository(IDbContextFactory<TrackorContext> db)
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
-
-    public CategoryRepository(ISqliteWasmDbContextFactory<TrackorContext> db)
-    {
-        _db = db;
-    }
-
     public async Task<Category[]> Get()
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
         var items = dbContext.Categories.OrderBy(x => x.Title).ToArray();
 
         return items;
@@ -23,7 +15,7 @@ public class CategoryRepository
 
     public async Task<Category> Save(Category category)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         if (category.Id == 0)
         {
@@ -42,7 +34,7 @@ public class CategoryRepository
 
     public async Task Delete(Category category)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         DisconnectActivityLogItemsFromCategory(category, dbContext);
 
