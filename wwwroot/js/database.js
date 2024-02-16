@@ -1,5 +1,5 @@
-﻿const cacheName = 'SqliteWasmHelper';
-const trackorDbPath = '/data/cache/trackor.db';
+﻿const cacheName = 'Bit-Besql';
+const trackorDbPath = '/data/cache/trackor.sqlite3';
 
 export async function generateDownloadUrl() {
 

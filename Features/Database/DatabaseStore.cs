@@ -122,11 +122,11 @@ public class DatabaseEffects
     [EffectMethod(typeof(DatabaseSetUpDbAction))]
     public async Task OnSetupDb(IDispatcher dispatcher)
     {
-        //var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./js/database.js");
+        var dbModule = await _js.InvokeAsync<IJSObjectReference>("import", "./js/database.js");
         var dbVersion = await _dbMigrator.EnsureDbCreated();
 
         dispatcher.Dispatch(new DatabaseSetDbVersionAction(dbVersion));
-        //dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));
+        dispatcher.Dispatch(new DatabaseSetDbCacheModuleAction(dbModule));
         dispatcher.Dispatch(new ThemeLoadDarkModeAction());
     }
 
@@ -134,14 +134,14 @@ public class DatabaseEffects
     public async Task OnBuildDbDownloadUrl(IDispatcher dispatcher)
     {
         // bail if the download url has already been generated
-        //if (!string.IsNullOrEmpty(_state.Value.DownloadUrl)) return;
+        if (!string.IsNullOrEmpty(_state.Value.DownloadUrl)) return;
 
-        //var downloadUrl = await _state.Value.DbCacheModule.InvokeAsync<string>("generateDownloadUrl");
+        var downloadUrl = await _state.Value.DbCacheModule.InvokeAsync<string>("generateDownloadUrl");
 
-        //if (!string.IsNullOrEmpty(downloadUrl))
-        //{
-        //    dispatcher.Dispatch(new DatabaseSetDownloadUrlAction(downloadUrl));
-        //}
+        if (!string.IsNullOrEmpty(downloadUrl))
+        {
+            dispatcher.Dispatch(new DatabaseSetDownloadUrlAction(downloadUrl));
+        }
     }
 
     [EffectMethod(typeof(DatabaseDeleteAction))]
