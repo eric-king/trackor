@@ -33,7 +33,7 @@
             <MudCardActions>
                 @if (!string.IsNullOrEmpty(DatabaseState.Value.DownloadUrl))
                 {
-                    <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.CloudDownload" Href="@DatabaseState.Value.DownloadUrl" Target="_blank" download="@dbFileName">Download Database</MudButton>
                 }
             </MudCardActions>
         </MudCard>
@@ -45,7 +45,7 @@
                 <MudText Typo="Typo.body2">Upload a previously saved Trackor database file into the application cache.</MudText>
             </MudCardContent>
             <MudCardActions>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Filled.CloudUpload">Restore from Backup</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" HtmlTag="label" for="dbInputFile" StartIcon="@Icons.Material.Filled.CloudUpload">Restore from Backup</MudButton>
             </MudCardActions>
         </MudCard>
     </MudItem>
@@ -66,9 +66,9 @@
     <MudText Typo="Typo.h4" Class="mb-3">Database Statistics:</MudText>
     <MudGrid>
         <DatabaseStatBlock Label="Activity Log Items" Icon="@Icons.Material.Filled.EventNote" Count="DatabaseState.Value.ActivityCount" />
-        <DatabaseStatBlock Label="Tasks" Icon="@Icons.Outlined.Task" Count="DatabaseState.Value.TaskCount" />
-        <DatabaseStatBlock Label="Code Snippets" Icon="@Icons.Filled.Code" Count="DatabaseState.Value.CodeSnippetCount" />
-        <DatabaseStatBlock Label="Links" Icon="@Icons.Filled.Link" Count="DatabaseState.Value.LinkCount" />
+        <DatabaseStatBlock Label="Tasks" Icon="@Icons.Material.Outlined.Task" Count="DatabaseState.Value.TaskCount" />
+        <DatabaseStatBlock Label="Code Snippets" Icon="@Icons.Material.Filled.Code" Count="DatabaseState.Value.CodeSnippetCount" />
+        <DatabaseStatBlock Label="Links" Icon="@Icons.Material.Filled.Link" Count="DatabaseState.Value.LinkCount" />
         <DatabaseStatBlock Label="Categories" Icon="@Icons.Material.Filled.FolderCopy" Count="DatabaseState.Value.CategoryCount" />
         <DatabaseStatBlock Label="Projects" Icon="@Icons.Material.Filled.Handyman" Count="DatabaseState.Value.ProjectCount" />
     </MudGrid>

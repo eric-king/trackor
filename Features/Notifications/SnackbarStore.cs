@@ -32,8 +32,6 @@ public class SnackbarEffects
     [EffectMethod]
     public async Task ShowInfo(SnackbarShowInfoAction action, IDispatcher dispatcher)
     {
-        await Task.Delay(0);
-
         if (action.ClickAction is null)
         {
             _snackbar.Add(action.Content, Severity.Info);
@@ -49,13 +47,13 @@ public class SnackbarEffects
                 };
             });
         }
+
+        await Task.Yield();
     }
 
     [EffectMethod]
     public async Task ShowSuccess(SnackbarShowSuccessAction action, IDispatcher dispatcher)
     {
-        await Task.Delay(0);
-
         if (action.ClickAction is null)
         {
             _snackbar.Add(action.Content, Severity.Success);
@@ -71,13 +69,13 @@ public class SnackbarEffects
                 };
             });
         }
+
+        await Task.Yield();
     }
 
     [EffectMethod]
     public async Task ShowWarning(SnackbarShowWarningAction action, IDispatcher dispatcher)
     {
-        await Task.Delay(0);
-
         if (action.ClickAction is null)
         {
             _snackbar.Add(action.Content, Severity.Warning);
@@ -93,13 +91,13 @@ public class SnackbarEffects
                 };
             });
         }
+
+        await Task.Yield();
     }
 
     [EffectMethod]
     public async Task ShowError(SnackbarShowErrorAction action, IDispatcher dispatcher)
     {
-        await Task.Delay(0);
-
         if (action.ClickAction is null)
         {
             _snackbar.Add(action.Content, Severity.Error);
@@ -115,5 +113,7 @@ public class SnackbarEffects
                 };
             });
         }
+
+        await Task.Yield();
     }
 }
