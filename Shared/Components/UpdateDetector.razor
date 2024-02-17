@@ -18,7 +18,7 @@
     [JSInvokable(nameof(OnUpdateAvailable))]
     public Task OnUpdateAvailable()
     {
-        Dispatcher.Dispatch(new SnackbarShowInfoAction("A new version of Trackor is available! Please close the app or browser tab and re-start."));
+        Dispatcher.Dispatch(new SnackbarShowInfoAction("A new version of Trackor is available! Please backup your database and then close the app or browser tab to re-start."));
         return Task.CompletedTask;
     }
 }

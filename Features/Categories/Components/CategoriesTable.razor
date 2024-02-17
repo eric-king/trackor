@@ -12,7 +12,7 @@
     <HeaderContent>
         <MudTh>Title</MudTh>
         <MudTh Style="text-align:center">Active</MudTh>
-        <MudTh Style="text-align:center"><MudIcon Icon="@Icons.Filled.Construction"></MudIcon></MudTh>
+        <MudTh Style="text-align:center"><MudIcon Icon="@Icons.Material.Filled.Construction"></MudIcon></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Title">@context.Title</MudTd>
@@ -20,9 +20,9 @@
             <ActiveInactiveLabel IsActive="context.Active" />
         </MudTd>
         <MudTd Style="text-align:center">
-            <MudIconButton Icon="@Icons.Filled.Delete" Color="Color.Error" OnClick="() => DeleteCategory(context)" Title="Delete"></MudIconButton>
-            <MudIconButton Icon="@Icons.Filled.ContentCopy" OnClick="() => EditCategory(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
-            <MudIconButton Icon="@Icons.Filled.Edit" OnClick="() => EditCategory(context)" Title="Edit"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => DeleteCategory(context)" Title="Delete"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" OnClick="() => EditCategory(context, copyOnly: true)" Title="Copy as New"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => EditCategory(context)" Title="Edit"></MudIconButton>
         </MudTd>
     </RowTemplate>
 </MudTable>

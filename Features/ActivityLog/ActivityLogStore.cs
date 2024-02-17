@@ -30,7 +30,7 @@ public class ActivityLogFeature : Feature<ActivityLogState>
         return new ActivityLogState
         {
             IsLoaded = false,
-            ActivityLogItems = Array.Empty<ActivityLogItem>()
+            ActivityLogItems = []
         };
     }
 }
@@ -103,7 +103,7 @@ public static class ActivityLogReducers
     {
         return state with
         {
-            ActivityLogItems = Array.Empty<ActivityLogItem>(),
+            ActivityLogItems = [],
             IsLoaded = false
         };
     }

@@ -1,20 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 
 namespace Trackor.Features.Database.Repositories;
 
-public class ApplicationSettingRepository
+public class ApplicationSettingRepository(IDbContextFactory<TrackorContext> db)
 {
-    private readonly ISqliteWasmDbContextFactory<TrackorContext> _db;
-
-    public ApplicationSettingRepository(ISqliteWasmDbContextFactory<TrackorContext> db)
-    {
-        _db = db;
-    }
-
     public async Task<ApplicationSetting> GetOrAdd(string key, string defaultValue)
     {
-        using var dbContext = await _db.CreateDbContextAsync();
+        using var dbContext = await db.CreateDbContextAsync();
 
         var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == key);
         if (appSetting == null) 
@@ -29,7 +21,7 @@ public class ApplicationSettingRepository
 
     public async Task Update(string key, string value)
     {
-        var dbContext = await _db.CreateDbContextAsync();
+        var dbContext = await db.CreateDbContextAsync();
         var existing = dbContext.ApplicationSettings.FirstOrDefault(x => x.Key == key);
         existing.Value = value;
         dbContext.SaveChanges();
@@ -37,7 +29,7 @@ public class ApplicationSettingRepository
 
     public async Task<ApplicationSetting> Toggle(string key) 
     {
-        var dbContext = await _db.CreateDbContextAsync();
+        var dbContext = await db.CreateDbContextAsync();
         var appSetting = dbContext.ApplicationSettings.SingleOrDefault(x => x.Key == key);
 
         if (appSetting is null || bool.TryParse(appSetting.Value, out bool appSettingValue) == false) 

@@ -53,7 +53,7 @@ else
     bool themeLoading = true;
     bool drawerOpen = false;
     bool isDarkMode = false;
-    string themeIcon = Icons.Filled.DarkMode;
+    string themeIcon = Icons.Material.Filled.DarkMode;
 
     protected override void OnInitialized()
     {
@@ -69,7 +69,7 @@ else
     {
         themeLoading = false;
         isDarkMode = action.IsDarkMode;
-        themeIcon = isDarkMode ? Icons.Filled.LightMode : Icons.Filled.DarkMode;
+        themeIcon = isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
         InvokeAsync(StateHasChanged);
     }
 }

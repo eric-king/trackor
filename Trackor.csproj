@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 		<WasmBuildNative>true</WasmBuildNative>
@@ -22,18 +22,18 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Fluxor" Version="5.4.0" />
-		<PackageReference Include="Fluxor.Blazor.Web" Version="5.4.0" />
-		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="5.4.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.9" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.9" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.9">
+		<PackageReference Include="Bit.Besql" Version="8.7.5" />
+		<PackageReference Include="Fluxor" Version="5.9.1" />
+		<PackageReference Include="Fluxor.Blazor.Web" Version="5.9.1" />
+		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="5.9.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.2" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.9" />
-		<PackageReference Include="MudBlazor" Version="6.0.15" />
-		<PackageReference Include="SqliteWasmHelper" Version="1.0.43-beta-g31b50d1f54" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2" />
+		<PackageReference Include="MudBlazor" Version="6.15.0" />
 	</ItemGroup>
 	
 	<ItemGroup>

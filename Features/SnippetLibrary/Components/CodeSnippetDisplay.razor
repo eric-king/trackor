@@ -10,12 +10,12 @@
             <span>@Snippet.Label</span>
         </div>
         <span>
-            <MudIconButton OnClick="Delete" Color="Color.Error" Variant="Variant.Text" Icon="@Icons.Filled.Delete" Title="Delete" Class="mx-1" />
-            <MudIconButton OnClick="Edit" Variant="Variant.Text" Icon="@Icons.Filled.Edit" Title="Edit" Class="mx-1" />
+            <MudIconButton OnClick="Delete" Color="Color.Error" Variant="Variant.Text" Icon="@Icons.Material.Filled.Delete" Title="Delete" Class="mx-1" />
+            <MudIconButton OnClick="Edit" Variant="Variant.Text" Icon="@Icons.Material.Filled.Edit" Title="Edit" Class="mx-1" />
             @if (!string.IsNullOrEmpty(Snippet.SourceUrl))
             {
                 <MudLink Href="@(Snippet.SourceUrl)" Target="_blank" Class="mr-3" title="Source Link">
-                    <MudIcon Icon="@Icons.Filled.Link" Color="Color.Default" ViewBox="0 -6 24 24" />
+                    <MudIcon Icon="@Icons.Material.Filled.Link" Color="Color.Default" ViewBox="0 -6 24 24" />
                 </MudLink>
             }
             <MudIconButton OnClick="CopyToClipboard" Variant="Variant.Text" Icon="@Icons.Material.Filled.ContentPaste" Title="Copy to Clipboard" Class="mx-1" />

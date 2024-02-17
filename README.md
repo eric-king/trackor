@@ -9,7 +9,7 @@ that interest me:
 - PWA ([Progressive Web Application](https://en.wikipedia.org/wiki/Progressive_web_application))
 - [EF Core](https://docs.microsoft.com/en-us/ef/core/) backed by a SQLite
  database, _in the browser cache_, with the help of
- [SqliteWasmHelper](https://github.com/JeremyLikness/SqliteWasmHelper)
+ [Besql](https://bitplatform.dev/besql/overview)
 - Application state using the Flux pattern with the [Fluxor](https://github.com/mrpmorris/Fluxor) library
 - [MudBlazor](https://www.mudblazor.com/) components and UI styling
 - [Azure Static Web Apps](https://azure.microsoft.com/en-us/services/app-service/static/)

@@ -6,15 +6,15 @@ public static class DatabaseServiceExtensions
 {
     public static IServiceCollection AddTrackorDb(this IServiceCollection services)
     {
-        services.AddSingleton<TrackorDbMigrator>();
-        services.AddSingleton<ActivityLogRepository>();
-        services.AddSingleton<ApplicationSettingRepository>();
-        services.AddSingleton<CategoryRepository>();
-        services.AddSingleton<CodeSnippetRepository>();
-        services.AddSingleton<DatabaseStatsRepository>();
-        services.AddSingleton<LinkLibraryRepository>();
-        services.AddSingleton<ProjectRepository>();
-        services.AddSingleton<TaskListRepository>();
+        services.AddScoped<TrackorDbMigrator>();
+        services.AddScoped<ActivityLogRepository>();
+        services.AddScoped<ApplicationSettingRepository>();
+        services.AddScoped<CategoryRepository>();
+        services.AddScoped<CodeSnippetRepository>();
+        services.AddScoped<DatabaseStatsRepository>();
+        services.AddScoped<LinkLibraryRepository>();
+        services.AddScoped<ProjectRepository>();
+        services.AddScoped<TaskListRepository>();
 
         return services;
     }

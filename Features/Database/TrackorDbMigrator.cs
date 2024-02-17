@@ -1,28 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SqliteWasmHelper;
 
 namespace Trackor.Features.Database
 {
-    public class TrackorDbMigrator
+    public class TrackorDbMigrator(IDbContextFactory<TrackorContext> dbContextFactory)
     {
         private const string APP_SETTING_DB_VERSION = "DbVersion";
         private const string CurrentDbVersion = "1.03";
         private TrackorContext _dbContext;
-        private readonly ISqliteWasmDbContextFactory<TrackorContext> _dbContextFactory;
-
-        public TrackorDbMigrator(ISqliteWasmDbContextFactory<TrackorContext> dbContextFactory)
-        {
-            _dbContextFactory = dbContextFactory;
-        }
 
         public async Task<string> EnsureDbCreated()
         {
-            _dbContext = await _dbContextFactory.CreateDbContextAsync();
-            
-            // uncomment the following line to see the CREATE TABLE
+            _dbContext = await dbContextFactory.CreateDbContextAsync();
+
+            // uncomment the following lines to see the CREATE TABLE
             // scripts in the browser console when generating a new
             // database - this is useful when creating new migrations
-            //OutputDbScriptToConsole();
+            var dbCreationSql = _dbContext.Database.GenerateCreateScript();
+            Console.WriteLine("Db Creation SQL:");
+            Console.WriteLine(dbCreationSql);
 
             _ = await _dbContext.Database.EnsureCreatedAsync();
             var dbVersionAppSetting = await _dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == APP_SETTING_DB_VERSION);
@@ -33,7 +28,7 @@ namespace Trackor.Features.Database
 
         public async Task DeleteDatabase()
         {
-            _dbContext = await _dbContextFactory.CreateDbContextAsync();
+            _dbContext = await dbContextFactory.CreateDbContextAsync();
             _ = await _dbContext.Database.EnsureDeletedAsync();
         }
 
@@ -129,13 +124,6 @@ namespace Trackor.Features.Database
 
             _ = await _dbContext.Database.ExecuteSqlRawAsync(Create_Table_LINKS);
             await ApplyDbVersionAsync("1.03");
-        }
-
-        private void OutputDbScriptToConsole()
-        {
-            var dbCreationSql = _dbContext.Database.GenerateCreateScript();
-            Console.WriteLine("Db Creation SQL:");
-            Console.WriteLine(dbCreationSql);
         }
     }
 }
