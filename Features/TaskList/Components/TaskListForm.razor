@@ -13,11 +13,11 @@
                     <ProjectPicker @ref="_projectPicker" />
                     <MudDatePicker @ref="_dueDatePicker" Label="Due Date" @bind-Date="_dueDate" AutoClose="true">
                         <PickerActions>
-                            <MudButton Class="mr-auto align-self-start" OnClick="@(() => _dueDatePicker.Clear())">Clear</MudButton>
-                            <MudButton OnClick="@(() => _dueDatePicker.Close(false))">Cancel</MudButton>
+                            <MudButton Class="mr-auto align-self-start" OnClick="@(async () => await _dueDatePicker.ClearAsync())">Clear</MudButton>
+                            <MudButton OnClick="@(async () => await _dueDatePicker.CloseAsync(false))">Cancel</MudButton>
                         </PickerActions>
                     </MudDatePicker>
-                    <MudCheckBox @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
+                    <MudCheckBox T="bool" @bind-Checked="_highPriority" Size="Size.Small" Dense="true" Label="High Priority" Class="mt-5" />
                 </MudForm>
             </MudCardContent>
             <MudCardActions>
@@ -38,7 +38,7 @@
     private int _taskId { get; set; }
     private CategoryPicker _categoryPicker;
     private ProjectPicker _projectPicker;
-    private string _narrative { get; set; }
+    private string? _narrative { get; set; }
     private DateTime? _dueDate { get; set; }
     private bool _highPriority { get; set; }
     private int _status { get; set; }

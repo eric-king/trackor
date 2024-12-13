@@ -67,18 +67,18 @@
     {
         _urlValidator = new UrlAttribute();
         _urlValidator.ErrorMessage = "Source URL must be a valid fully-qualified URL";
-        SubscribeToAction<SnippetLibraryEditCodeSnippetAction>(EditSnippet);
+        SubscribeToAction<SnippetLibraryEditCodeSnippetAction>(async (action) => await EditSnippet(action));
         base.OnInitialized();
     }
 
-    private void EditSnippet(SnippetLibraryEditCodeSnippetAction action)
+    private async Task EditSnippet(SnippetLibraryEditCodeSnippetAction action)
     {
         _selectedId = action.CodeSnippet.Id;
         _language = action.CodeSnippet.Language;
         _snippetLabel = action.CodeSnippet.Label;
         _sourceUrl = action.CodeSnippet.SourceUrl;
         _snippetContents = action.CodeSnippet.Content;
-        _formPanel.Expand();
+        await _formPanel.ExpandAsync();
 
         _snippetForm.ResetValidation();
     }
@@ -110,9 +110,9 @@
         await _labelFieldRef.FocusAsync();
     }
 
-    private string ValidateSourceUrl(string sourceUrl)
+    private string? ValidateSourceUrl(string sourceUrl)
     {
-        string errorMessage = null;
+        string? errorMessage = null;
 
         if (!string.IsNullOrEmpty(sourceUrl))
         {

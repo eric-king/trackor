@@ -12,9 +12,9 @@
 
 @code {
 
-    public Project SelectedProject => _selectedProject;
+    public Project? SelectedProject => _selectedProject;
 
-    private Project _selectedProject { get; set; }
+    private Project? _selectedProject { get; set; }
 
     protected override void OnInitialized()
     {
@@ -37,7 +37,7 @@
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<Project>> ProjectSearch(string value)
+    private async Task<IEnumerable<Project>> ProjectSearch(string value, CancellationToken cancellationToken)
     {
         await Task.Yield();
 

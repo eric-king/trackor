@@ -10,7 +10,7 @@
                     <MudTextField @ref="categoryFieldRef" T="string" Label="Category Title" @bind-Value="categoryTitle" Immediate="true" OnKeyUp="OnKeyUp" AutoFocus="true" Required="true" RequiredError="" />
                 </MudItem>
                 <MudItem xs="2">
-                    <MudCheckBox @bind-Checked="@active">Active</MudCheckBox>
+                    <MudCheckBox T="bool" @bind-Checked="@active" Label="Active"></MudCheckBox>
                 </MudItem>
             </MudGrid>
             <MudGrid>
