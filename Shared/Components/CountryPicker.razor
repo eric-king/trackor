@@ -1,11 +1,11 @@
 ﻿<MudAutocomplete T="CountryCode"
-                 Label="Country"
-                 @bind-Value="_selectedCountry"
-                 SearchFunc="@CountryCodeSearch"
-                 ToStringFunc="@( c => c == null ? null : $"{c.Name}")"
-                 ResetValueOnEmptyText="true"
-                 Required="true"
-                 RequiredError="" />
+Label="Country"
+@bind-Value="_selectedCountry"
+SearchFunc="@CountryCodeSearch"
+ToStringFunc="@( c => c == null ? null : $"{c.Name}")"
+ResetValueOnEmptyText="true"
+Required="true"
+RequiredError="" />
 
 @code {
     private CountryCode _selectedCountry { get; set; } = Countries.CountryCodes.First();
@@ -21,7 +21,7 @@
 
     public CountryCode SelectedCountry => _selectedCountry;
 
-    private async Task<IEnumerable<CountryCode>> CountryCodeSearch(string value)
+    private async Task<IEnumerable<CountryCode>> CountryCodeSearch(string value, CancellationToken cancellationToken)
     {
         await Task.Yield();
 

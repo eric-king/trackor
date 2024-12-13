@@ -12,9 +12,9 @@
 
 @code {
 
-    public Category SelectedCategory => _selectedCategory;
+    public Category? SelectedCategory => _selectedCategory;
 
-    private Category _selectedCategory { get; set; }
+    private Category? _selectedCategory { get; set; }
 
     protected override void OnInitialized()
     {
@@ -37,7 +37,7 @@
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<Category>> CategorySearch(string value)
+    private async Task<IEnumerable<Category>> CategorySearch(string value, CancellationToken cancellationToken)
     {
         await Task.Yield();
 

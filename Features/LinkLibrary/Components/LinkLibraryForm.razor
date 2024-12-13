@@ -51,17 +51,17 @@
     {
         _urlValidator = new UrlAttribute();
         _urlValidator.ErrorMessage = "Link URL must be a valid fully-qualified URL";
-        SubscribeToAction<LinkLibraryEditLinkAction>(EditLink);
+        SubscribeToAction<LinkLibraryEditLinkAction>(async (action) => await EditLink(action));
         base.OnInitialized();
     }
 
-    private void EditLink(LinkLibraryEditLinkAction action)
+    private async Task EditLink(LinkLibraryEditLinkAction action)
     {
         _selectedId = action.Link.Id;
         _linkLabel = action.Link.Label;
         _linkUrl = action.Link.Url;
         _linkDescription = action.Link.Description;
-        _formPanel.Expand();
+        await _formPanel.ExpandAsync();
 
         _linkForm.ResetValidation();
     }
@@ -92,9 +92,9 @@
         await _labelFieldRef.FocusAsync();
     }
 
-    private string ValidateLinkUrl(string linkUrl)
+    private string? ValidateLinkUrl(string linkUrl)
     {
-        string errorMessage = null;
+        string? errorMessage = null;
 
         if (!string.IsNullOrEmpty(linkUrl))
         {

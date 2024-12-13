@@ -6,7 +6,7 @@
 
 @if (PomodoroState.Value.Running || PomodoroState.Value.Finished)
 {
-    <MudChip Icon="@Icons.Material.Outlined.Timer" Label="true" Color="chipColor" OnClick="@(() => NavigationManager.NavigateTo("/pomodoro"))">
+    <MudChip T="string" Icon="@Icons.Material.Outlined.Timer" Label="true" Color="chipColor" OnClick="@(() => NavigationManager.NavigateTo("/pomodoro"))">
         Pomodoro @PomodoroState.Value.Remaining.ToString(@"mm\:ss")
     </MudChip>
 }
